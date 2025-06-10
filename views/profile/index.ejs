@@ -1,0 +1,202 @@
+<div class="profile-container">
+    <h1>👤 Min Profil</h1>
+    
+    <% if (typeof error !== 'undefined' && error) { %>
+    <div class="alert alert-error"><%= error %></div>
+    <% } %>
+    
+    <% if (typeof success !== 'undefined' && success) { %>
+    <div class="alert alert-success"><%= success %></div>
+    <% } %>
+
+    <div class="profile-grid">
+        <!-- Profile Info Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-picture-container">
+                    <img src="<%= user.profilePicture || '/images/default-avatar.png' %>" 
+                         alt="Profilbilde" 
+                         class="profile-picture">
+                    <div class="profile-picture-overlay">
+                        <span>Endre bilde</span>
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <h2><%= user.username %></h2>
+                    <p class="profile-email"><%= user.email %></p>
+                    <div class="profile-stats">
+                        <span class="stat">
+                            <strong><%= user.totalVotes %></strong>
+                            <small>Totale stemmer</small>
+                        </span>
+                        <span class="stat">
+                            <strong><%= new Date(user.createdAt).toLocaleDateString('no-NO') %></strong>
+                            <small>Medlem siden</small>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Picture Upload Form -->
+            <form action="/profile/upload-picture" method="POST" enctype="multipart/form-data" class="upload-form">
+                <div class="form-group">
+                    <label for="profilePicture">Last opp nytt profilbilde:</label>
+                    <input type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
+                    <small>Maks 5MB. JPG, PNG, GIF eller WebP.</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Oppdater bilde</button>
+            </form>
+
+            <!-- Bio Section -->
+            <div class="bio-section">
+                <h3>Om meg</h3>
+                <form action="/profile/update-bio" method="POST">
+                    <div class="form-group">
+                        <textarea name="bio" id="bio" rows="4" maxlength="500" 
+                                  placeholder="Fortell litt om deg selv..."
+                                  class="bio-textarea"><%= user.bio || '' %></textarea>
+                        <small class="char-counter">0/500 tegn</small>
+                    </div>
+                    <button type="submit" class="btn btn-outline">Oppdater bio</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Favorite Fox Card -->
+        <div class="profile-card">
+            <h3>🦊 Min favorittrev</h3>
+            <% if (user.favoriteFox) { %>
+            <div class="favorite-fox-display">
+                <img src="<%= user.favoriteFox.imageUrl %>" 
+                     alt="Favorittrev <%= user.favoriteFox.foxNumber %>"
+                     class="favorite-fox-image">
+                <p><strong>Rev #<%= user.favoriteFox.foxNumber %></strong></p>
+            </div>
+            <% } else { %>
+            <p class="no-favorite">Du har ikke valgt en favorittrev ennå.</p>
+            <% } %>
+
+            <form action="/profile/set-favorite-fox" method="POST" class="favorite-fox-form">
+                <div class="form-group">
+                    <label for="foxNumber">Velg ny favorittrev:</label>
+                    <select name="foxNumber" id="foxNumber" required>
+                        <option value="">Velg en rev...</option>
+                        <% allFoxes.forEach(fox => { %>
+                        <option value="<%= fox.foxNumber %>" 
+                                <%= user.favoriteFox && user.favoriteFox.foxNumber === fox.foxNumber ? 'selected' : '' %>>
+                            Rev #<%= fox.foxNumber %> (<%= fox.totalVotes %> stemmer)
+                        </option>
+                        <% }) %>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Sett favoritt</button>
+            </form>
+        </div>
+
+        <!-- Password Change Card -->
+        <div class="profile-card">
+            <h3>🔒 Endre passord</h3>
+            <form action="/profile/change-password" method="POST" class="password-form">
+                <div class="form-group">
+                    <label for="currentPassword">Nåværende passord:</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassword">Nytt passord:</label>
+                    <input type="password" id="newPassword" name="newPassword" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Bekreft nytt passord:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Endre passord</button>
+            </form>
+        </div>
+
+        <!-- Personal Voting Statistics -->
+        <div class="profile-card voting-stats-card">
+            <h3>📊 Mine stemmestatistikker</h3>
+            <% if (userVotes && userVotes.length > 0) { %>
+            <div class="personal-leaderboard">
+                <p class="stats-description">Revene du har stemt mest på:</p>
+                <% userVotes.forEach((fox, index) => { %>
+                <div class="personal-vote-item">
+                    <div class="vote-rank">#<%= index + 1 %></div>
+                    <div class="fox-thumbnail">
+                        <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" loading="lazy">
+                    </div>
+                    <div class="vote-info">
+                        <strong>Rev #<%= fox.foxNumber %></strong>
+                        <div class="vote-details">
+                            <span class="my-votes"><%= fox.userVoteCount %> mine stemmer</span>
+                            <span class="total-votes"><%= fox.totalVotes %> totalt</span>
+                        </div>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+            <% } else { %>
+            <div class="no-votes">
+                <p>Du har ikke stemt på noen rever ennå!</p>
+                <a href="/" class="btn btn-primary">Start å stemme</a>
+            </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+// Character counter for bio
+document.addEventListener('DOMContentLoaded', function() {
+    const bioTextarea = document.getElementById('bio');
+    const charCounter = document.querySelector('.char-counter');
+    
+    if (bioTextarea && charCounter) {
+        function updateCharCount() {
+            const count = bioTextarea.value.length;
+            charCounter.textContent = `${count}/500 tegn`;
+            charCounter.style.color = count > 450 ? '#e53e3e' : '#666';
+        }
+        
+        updateCharCount();
+        bioTextarea.addEventListener('input', updateCharCount);
+    }
+
+    // Profile picture preview
+    const profilePictureInput = document.getElementById('profilePicture');
+    const profilePicture = document.querySelector('.profile-picture');
+    
+    if (profilePictureInput && profilePicture) {
+        profilePictureInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profilePicture.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Password confirmation validation
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    
+    if (newPasswordInput && confirmPasswordInput) {
+        function validatePasswords() {
+            if (confirmPasswordInput.value && newPasswordInput.value !== confirmPasswordInput.value) {
+                confirmPasswordInput.setCustomValidity('Passordene stemmer ikke overens');
+            } else {
+                confirmPasswordInput.setCustomValidity('');
+            }
+        }
+        
+        newPasswordInput.addEventListener('input', validatePasswords);
+        confirmPasswordInput.addEventListener('input', validatePasswords);
+    }
+});
+</script>

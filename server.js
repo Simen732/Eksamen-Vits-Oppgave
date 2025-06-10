@@ -14,6 +14,7 @@ const expressLayouts = require('express-ejs-layouts');
 const authRoutes = require('./routes/auth');
 const voteRoutes = require('./routes/vote');
 const leaderboardRoutes = require('./routes/leaderboard');
+const profileRoutes = require('./routes/profile');
 const { authenticateToken } = require('./middleware/auth');
 
 const app = express();
@@ -26,13 +27,15 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts
-      imgSrc: ["'self'", "https://randomfox.ca", "https:", "data:", "blob:"], // More specific and add blob:
-      connectSrc: ["'self'", "ws:", "wss:", "https://randomfox.ca"], // Add randomfox.ca to connect sources
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "https://randomfox.ca", "https:", "data:", "blob:"],
+      connectSrc: ["'self'", "ws:", "wss:", "https://randomfox.ca"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"]
     }
-  }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Rate limiting
@@ -81,6 +84,7 @@ app.set('io', io);
 app.use('/auth', authRoutes);
 app.use('/vote', voteLimiter, voteRoutes);
 app.use('/leaderboard', leaderboardRoutes);
+app.use('/profile', profileRoutes);
 
 // Main page
 app.get('/', authenticateToken, async (req, res) => {
@@ -91,9 +95,39 @@ app.get('/', authenticateToken, async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const trendingFoxes = await Fox.find({
-      'votes.date': { $gte: today }
-    }).sort({ totalVotes: -1 }).limit(5);
+    const trendingFoxes = await Fox.aggregate([
+      {
+        $match: {
+          totalVotes: { $gt: 0 }
+        }
+      },
+      {
+        $addFields: {
+          todayVotes: {
+            $size: {
+              $filter: {
+                input: "$votes",
+                cond: { $gte: ["$$this.date", today] }
+              }
+            }
+          }
+        }
+      },
+      {
+        $sort: { todayVotes: -1, totalVotes: -1 }
+      },
+      {
+        $limit: 5
+      },
+      {
+        $project: {
+          foxNumber: 1,
+          imageUrl: 1,
+          totalVotes: 1,
+          todayVotes: 1
+        }
+      }
+    ]);
 
     res.render('index', { 
       user: req.user,

@@ -22,6 +22,25 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
+  profilePicture: {
+    type: String,
+    default: '/images/default-avatar.png'
+  },
+  bio: {
+    type: String,
+    maxlength: 500,
+    default: ''
+  },
+  favoriteFox: {
+    foxNumber: {
+      type: Number,
+      default: null
+    },
+    imageUrl: {
+      type: String,
+      default: null
+    }
+  },
   totalVotes: {
     type: Number,
     default: 0

@@ -74,10 +74,10 @@ router.post('/vote/:foxNumber', authenticateToken, async (req, res) => {
     
     if (!fox) {
       console.log('Fox not found, creating new fox entry');
-      // Create fox if it doesn't exist
+      // Create fox if it doesn't exist - use the standard randomfox.ca URL pattern
       fox = new Fox({
         foxNumber: foxNumber,
-        imageUrl: `https://randomfox.ca/images/${foxNumber}.jpg`, // Default URL pattern
+        imageUrl: `https://randomfox.ca/images/${foxNumber}.jpg`,
         votes: [],
         totalVotes: 0,
         registeredVotes: 0

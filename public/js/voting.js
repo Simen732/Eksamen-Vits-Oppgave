@@ -36,20 +36,27 @@ function displayFoxes(fox1, fox2) {
     votingSection.innerHTML = `
         <div class="fox-comparison">
             <div class="fox-option" data-fox-number="${fox1.number}">
-                <img src="${fox1.url}" alt="Fox ${fox1.number}" loading="lazy" crossorigin="anonymous"
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJpbGRlIGlra2UgZnVubmV0PC90ZXh0Pjwvc3ZnPg=='">
+                <img src="${fox1.url}" alt="Fox ${fox1.number}" loading="lazy" crossorigin="anonymous">
                 <button class="vote-btn" data-fox-number="${fox1.number}">Velg denne reven</button>
                 <span class="fox-label">Rev #${fox1.number}</span>
             </div>
             <div class="vs-divider">VS</div>
             <div class="fox-option" data-fox-number="${fox2.number}">
-                <img src="${fox2.url}" alt="Fox ${fox2.number}" loading="lazy" crossorigin="anonymous"
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJpbGRlIGlra2UgZnVubmV0PC90ZXh0Pjwvc3ZnPg=='">
+                <img src="${fox2.url}" alt="Fox ${fox2.number}" loading="lazy" crossorigin="anonymous">
                 <button class="vote-btn" data-fox-number="${fox2.number}">Velg denne reven</button>
                 <span class="fox-label">Rev #${fox2.number}</span>
             </div>
         </div>
     `;
+    
+    // Add error handling for images
+    const images = votingSection.querySelectorAll('img');
+    images.forEach(img => {
+        img.addEventListener('error', function() {
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJpbGRlIGlra2UgZnVubmV0PC90ZXh0Pjwvc3ZnPg==';
+            this.alt = 'Bilde ikke funnet';
+        });
+    });
     
     // Add event listeners to vote buttons
     const voteButtons = document.querySelectorAll('.vote-btn');
