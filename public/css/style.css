@@ -163,6 +163,32 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* Image loading states */
+.fox-option img, .trending-fox img, .fox-image img {
+    transition: opacity 0.3s ease;
+}
+
+.fox-option img[src*="data:image/svg+xml"], 
+.trending-fox img[src*="data:image/svg+xml"], 
+.fox-image img[src*="data:image/svg+xml"] {
+    opacity: 0.7;
+    filter: grayscale(1);
+}
+
+/* Loading placeholder */
+.fox-option img:not([src]), 
+.trending-fox img:not([src]), 
+.fox-image img:not([src]) {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 .vote-btn {
     background: #667eea;
     color: white;
@@ -241,6 +267,32 @@ body {
     height: 100px;
     object-fit: cover;
     border-radius: 8px;
+}
+
+/* Image loading states */
+.fox-option img, .trending-fox img, .fox-image img {
+    transition: opacity 0.3s ease;
+}
+
+.fox-option img[src*="data:image/svg+xml"], 
+.trending-fox img[src*="data:image/svg+xml"], 
+.fox-image img[src*="data:image/svg+xml"] {
+    opacity: 0.7;
+    filter: grayscale(1);
+}
+
+/* Loading placeholder */
+.fox-option img:not([src]), 
+.trending-fox img:not([src]), 
+.fox-image img:not([src]) {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 .trending-info {
@@ -576,4 +628,21 @@ body {
     .trending-fox img {
         height: 80px;
     }
+}
+
+.fox-option.chosen {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #48bb78, #38a169);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);
+}
+
+.fox-option.chosen .fox-label {
+    color: white;
+}
+
+.fox-option.chosen .vote-btn {
+    background: white;
+    color: #48bb78;
 }

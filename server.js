@@ -26,9 +26,9 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "https://randomfox.ca", "https:", "data:"], // Add https: for all HTTPS images
-      connectSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts
+      imgSrc: ["'self'", "https://randomfox.ca", "https:", "data:", "blob:"], // More specific and add blob:
+      connectSrc: ["'self'", "ws:", "wss:", "https://randomfox.ca"], // Add randomfox.ca to connect sources
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"]
     }

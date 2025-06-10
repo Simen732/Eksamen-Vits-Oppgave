@@ -61,12 +61,27 @@ router.get('/random-foxes', async (req, res) => {
 // Vote for a fox
 router.post('/vote/:foxNumber', authenticateToken, async (req, res) => {
   const foxNumber = parseInt(req.params.foxNumber);
+  
+  console.log('Vote request for fox:', foxNumber);
+  console.log('User authenticated:', !!req.user);
+
+  if (isNaN(foxNumber)) {
+    return res.status(400).json({ error: 'Invalid fox number' });
+  }
 
   try {
-    const fox = await Fox.findOne({ foxNumber });
+    let fox = await Fox.findOne({ foxNumber });
     
     if (!fox) {
-      return res.status(404).json({ error: 'Fox not found' });
+      console.log('Fox not found, creating new fox entry');
+      // Create fox if it doesn't exist
+      fox = new Fox({
+        foxNumber: foxNumber,
+        imageUrl: `https://randomfox.ca/images/${foxNumber}.jpg`, // Default URL pattern
+        votes: [],
+        totalVotes: 0,
+        registeredVotes: 0
+      });
     }
 
     // Add vote
@@ -83,9 +98,13 @@ router.post('/vote/:foxNumber', authenticateToken, async (req, res) => {
       fox.registeredVotes += 1;
       // Update user's total votes
       await User.findByIdAndUpdate(req.user._id, { $inc: { totalVotes: 1 } });
+      console.log('Updated registered user vote count');
+    } else {
+      console.log('Anonymous vote recorded');
     }
 
     await fox.save();
+    console.log('Vote saved successfully');
 
     // Emit real-time update
     const io = req.app.get('io');
@@ -97,12 +116,12 @@ router.post('/vote/:foxNumber', authenticateToken, async (req, res) => {
 
     res.json({ 
       success: true, 
-      message: `Vote recorded for Fox ${foxNumber}!`,
+      message: `Stemme registrert for Rev ${foxNumber}!`,
       totalVotes: fox.totalVotes 
     });
   } catch (error) {
     console.error('Voting error:', error);
-    res.status(500).json({ error: 'Failed to record vote' });
+    res.status(500).json({ error: 'Kunne ikke registrere stemme' });
   }
 });
 

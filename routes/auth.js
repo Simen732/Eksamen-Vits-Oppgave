@@ -2,18 +2,18 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-const { JWT_SECRET } = require('../middleware/auth');
+const { JWT_SECRET, authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Registration page
-router.get('/register', (req, res) => {
-  res.render('auth/register', { error: null });
+router.get('/register', authenticateToken, (req, res) => {
+  res.render('auth/register', { error: null, user: req.user });
 });
 
 // Login page
-router.get('/login', (req, res) => {
-  res.render('auth/login', { error: null });
+router.get('/login', authenticateToken, (req, res) => {
+  res.render('auth/login', { error: null, user: req.user });
 });
 
 // Register
@@ -25,7 +25,8 @@ router.post('/register', [
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.render('auth/register', { 
-      error: 'Invalid input data' 
+      error: 'Invalid input data',
+      user: null
     });
   }
 
@@ -39,7 +40,8 @@ router.post('/register', [
 
     if (existingUser) {
       return res.render('auth/register', { 
-        error: 'User already exists' 
+        error: 'User already exists',
+        user: null
       });
     }
 
@@ -60,7 +62,8 @@ router.post('/register', [
   } catch (error) {
     console.error('Registration error:', error);
     res.render('auth/register', { 
-      error: 'Registration failed' 
+      error: 'Registration failed',
+      user: null
     });
   }
 });
@@ -73,7 +76,8 @@ router.post('/login', [
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.render('auth/login', { 
-      error: 'Invalid input data' 
+      error: 'Invalid input data',
+      user: null
     });
   }
 
@@ -87,7 +91,8 @@ router.post('/login', [
 
     if (!user || !(await user.comparePassword(password))) {
       return res.render('auth/login', { 
-        error: 'Invalid credentials' 
+        error: 'Invalid credentials',
+        user: null
       });
     }
 
@@ -104,7 +109,8 @@ router.post('/login', [
   } catch (error) {
     console.error('Login error:', error);
     res.render('auth/login', { 
-      error: 'Login failed' 
+      error: 'Login failed',
+      user: null
     });
   }
 });
