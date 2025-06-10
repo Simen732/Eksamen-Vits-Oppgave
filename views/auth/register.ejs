@@ -1,0 +1,33 @@
+<div class="auth-container">
+    <div class="auth-form">
+        <h1>Registrer deg</h1>
+        <p>Opprett en konto for å få stemmene dine registrert på leaderboard!</p>
+
+        <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+        <% } %>
+
+        <form action="/auth/register" method="POST">
+            <div class="form-group">
+                <label for="username">Brukernavn:</label>
+                <input type="text" id="username" name="username" required minlength="3" maxlength="20">
+            </div>
+
+            <div class="form-group">
+                <label for="email">E-post:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Passord:</label>
+                <input type="password" id="password" name="password" required minlength="6">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">Registrer deg</button>
+        </form>
+
+        <p class="auth-link">
+            Har du allerede en konto? <a href="/auth/login">Logg inn her</a>
+        </p>
+    </div>
+</div>

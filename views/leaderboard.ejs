@@ -1,0 +1,35 @@
+<div class="leaderboard-container">
+    <h1>🏆 Leaderboard</h1>
+    <p class="subtitle">De mest populære revene basert på stemmer fra registrerte brukere</p>
+
+    <% if (foxes && foxes.length > 0) { %>
+    <div class="leaderboard-list">
+        <% foxes.forEach((fox, index) => { %>
+        <div class="leaderboard-item <%= index < 3 ? 'top-' + (index + 1) : '' %>">
+            <div class="rank">
+                <% if (index === 0) { %>🥇
+                <% } else if (index === 1) { %>🥈
+                <% } else if (index === 2) { %>🥉
+                <% } else { %>#<%= index + 1 %>
+                <% } %>
+            </div>
+            <div class="fox-image">
+                <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" loading="lazy">
+            </div>
+            <div class="fox-info">
+                <h3>Rev #<%= fox.foxNumber %></h3>
+                <div class="vote-stats">
+                    <span class="registered-votes"><%= fox.registeredVotes %> registrerte stemmer</span>
+                    <span class="total-votes"><%= fox.totalVotes %> totale stemmer</span>
+                </div>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+    <% } else { %>
+    <div class="empty-state">
+        <p>Ingen stemmer registrert ennå. Vær den første til å stemme!</p>
+        <a href="/" class="btn btn-primary">Start stemming</a>
+    </div>
+    <% } %>
+</div>
