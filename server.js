@@ -56,7 +56,11 @@ const voteLimiter = rateLimit({
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieParser({
+  secure: false, // Disable secure cookies
+  httpOnly: true,
+  sameSite: 'lax'
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // View engine setup
