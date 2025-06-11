@@ -100,6 +100,11 @@ app.use('/vote', voteLimiter, voteRoutes);
 app.use('/leaderboard', leaderboardRoutes);
 app.use('/profile', profileRoutes);
 
+// FAQ page
+app.get('/faq', authenticateToken, (req, res) => {
+  res.render('faq', { user: req.user });
+});
+
 // Main page
 app.get('/', authenticateToken, async (req, res) => {
   const Fox = require('./models/Fox');
