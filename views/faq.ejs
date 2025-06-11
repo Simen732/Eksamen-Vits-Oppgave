@@ -63,6 +63,21 @@
     <div class="faq-footer">
         <p>Ikke funnet svaret du leter etter? <a href="/">Gå tilbake til voting</a> og ha det gøy med revene! 🦊</p>
     </div>
+
+    <div class="feedback-section">
+        <h3>Fikk du svar på spørsmålene dine?</h3>
+        <div class="button-container">
+            <button id="yesBtn" class="feedback-btn yes-btn">Ja! 😊</button>
+            <button id="noBtn" class="feedback-btn no-btn">Nei 😞</button>
+        </div>
+    </div>
+</div>
+
+<!-- Popup Modal -->
+<div id="popup" class="popup-overlay">
+    <div class="popup-content">
+        <p>Så fint, tar deg tilbake til hovedsiden nå! 🦊</p>
+    </div>
 </div>
 
 <style>
@@ -74,13 +89,13 @@
 
 .faq-container h1 {
     text-align: center;
-    color: #2c3e50;
+    color: #000000;
     margin-bottom: 10px;
 }
 
 .subtitle {
     text-align: center;
-    color: #7f8c8d;
+    color: #000000;
     margin-bottom: 40px;
     font-size: 1.1em;
 }
@@ -152,6 +167,102 @@
     text-decoration: underline;
 }
 
+.feedback-section {
+    text-align: center;
+    padding: 30px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 15px;
+    margin-top: 30px;
+    border: 2px solid #e67e22;
+}
+
+.feedback-section h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    height: 60px;
+    align-items: center;
+}
+
+.feedback-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: absolute;
+    color: white;
+}
+
+.yes-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    left: calc(50% - 150px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.no-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    right: calc(50% - 150px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-content {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: popupAppear 0.3s ease;
+}
+
+.popup-content p {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 0;
+}
+
+@keyframes popupAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 @media (max-width: 768px) {
     .faq-container {
         padding: 15px;
@@ -164,5 +275,63 @@
     .faq-item h3 {
         font-size: 1.1em;
     }
+    
+    .button-container {
+        gap: 0;
+    }
+    
+    .feedback-btn {
+        padding: 10px 20px;
+        font-size: 1em;
+    }
+    
+    .yes-btn {
+        left: calc(50% - 120px);
+    }
+    
+    .no-btn {
+        right: calc(50% - 120px);
+    }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const popup = document.getElementById('popup');
+    
+    let buttonsSwapped = false;
+    
+    // Function to swap button positions
+    function swapButtons() {
+        if (!buttonsSwapped) {
+            yesBtn.style.left = 'calc(50% + 30px)';
+            noBtn.style.right = 'calc(50% + 30px)';
+            buttonsSwapped = true;
+        } else {
+            yesBtn.style.left = 'calc(50% - 150px)';
+            noBtn.style.right = 'calc(50% - 150px)';
+            buttonsSwapped = false;
+        }
+    }
+    
+    // Add hover event to no button
+    noBtn.addEventListener('mouseenter', swapButtons);
+    
+    // Add click event to yes button
+    yesBtn.addEventListener('click', function() {
+        popup.style.display = 'flex';
+        
+        setTimeout(function() {
+            window.location.href = '/';
+        }, 2000);
+    });
+    
+    // Prevent clicking the no button (just in case someone is really fast)
+    noBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        swapButtons();
+    });
+});
+</script>

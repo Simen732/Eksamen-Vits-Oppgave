@@ -125,4 +125,26 @@ router.post('/vote/:foxNumber', authenticateToken, async (req, res) => {
   }
 });
 
+// Get most popular fox
+router.get('/most-popular', async (req, res) => {
+  try {
+    const mostPopularFox = await Fox.findOne({ totalVotes: { $gt: 0 } })
+      .sort({ totalVotes: -1 })
+      .select('foxNumber imageUrl totalVotes');
+
+    if (!mostPopularFox) {
+      return res.json({ error: 'No votes yet' });
+    }
+
+    res.json({
+      foxNumber: mostPopularFox.foxNumber,
+      imageUrl: mostPopularFox.imageUrl,
+      totalVotes: mostPopularFox.totalVotes
+    });
+  } catch (error) {
+    console.error('Error fetching most popular fox:', error);
+    res.status(500).json({ error: 'Failed to fetch most popular fox' });
+  }
+});
+
 module.exports = router;

@@ -121,7 +121,10 @@ router.post('/upload-picture', authenticateToken, requireAuth, upload.single('pr
 
     // Delete old profile picture if it exists
     const user = await User.findById(req.user._id);
-    if (user.profilePicture && user.profilePicture !== '/images/placeholder.png') {
+    if (user.profilePicture && 
+        user.profilePicture !== '/images/placeholder.png' && 
+        user.profilePicture !== '' &&
+        !user.profilePicture.includes('placeholder')) {
       const oldPicturePath = path.join(__dirname, '../public', user.profilePicture);
       if (fs.existsSync(oldPicturePath)) {
         fs.unlinkSync(oldPicturePath);

@@ -13,14 +13,17 @@
         <!-- Profile Info Card -->
         <div class="profile-card">
             <div class="profile-header">
+                <% if (user.profilePicture && user.profilePicture !== '' && user.profilePicture !== '/images/placeholder.png') { %>
                 <div class="profile-picture-container">
-                    <img src="<%= user.profilePicture && user.profilePicture !== '/images/placeholder.png' ? user.profilePicture : '/images/placeholder.png' %>" 
+                    <img src="<%= user.profilePicture %>" 
                          alt="Profilbilde" 
-                         class="profile-picture">
+                         class="profile-picture"
+                         onerror="this.style.display='none';">
                     <div class="profile-picture-overlay">
                         <span>Endre bilde</span>
                     </div>
                 </div>
+                <% } %>
                 <div class="profile-info">
                     <h2><%= user.username %></h2>
                     <p class="profile-email"><%= user.email %></p>
@@ -40,7 +43,7 @@
             <!-- Profile Picture Upload Form -->
             <form action="/profile/upload-picture" method="POST" enctype="multipart/form-data" class="upload-form">
                 <div class="form-group">
-                    <label for="profilePicture">Last opp nytt profilbilde:</label>
+                    <label for="profilePicture">Last opp <% if (!user.profilePicture || user.profilePicture === '' || user.profilePicture === '/images/placeholder.png') { %>nytt <% } %>profilbilde:</label>
                     <input type="file" id="profilePicture" name="profilePicture" accept="image/*" required>
                     <small>Maks 5MB. JPG, PNG, GIF eller WebP.</small>
                 </div>
@@ -65,11 +68,12 @@
         <!-- Favorite Fox Card -->
         <div class="profile-card">
             <h3>🦊 Min favorittrev</h3>
-            <% if (user.favoriteFox) { %>
+            <% if (user.favoriteFox && user.favoriteFox.foxNumber && user.favoriteFox.imageUrl) { %>
             <div class="favorite-fox-display">
                 <img src="<%= user.favoriteFox.imageUrl %>" 
                      alt="Favorittrev <%= user.favoriteFox.foxNumber %>"
-                     class="favorite-fox-image">
+                     class="favorite-fox-image"
+                     onerror="this.style.display='none';">
                 <p><strong>Rev #<%= user.favoriteFox.foxNumber %></strong></p>
             </div>
             <% } else { %>
@@ -78,16 +82,35 @@
 
             <form action="/profile/set-favorite-fox" method="POST" class="favorite-fox-form">
                 <div class="form-group">
-                    <label for="foxNumber">Velg ny favorittrev:</label>
-                    <select name="foxNumber" id="foxNumber" required>
-                        <option value="">Velg en rev...</option>
-                        <% allFoxes.forEach(fox => { %>
-                        <option value="<%= fox.foxNumber %>" 
-                                <%= user.favoriteFox && user.favoriteFox.foxNumber === fox.foxNumber ? 'selected' : '' %>>
-                            Rev #<%= fox.foxNumber %> (<%= fox.totalVotes %> stemmer)
-                        </option>
-                        <% }) %>
-                    </select>
+                    <label for="foxNumber"><% if (user.favoriteFox && user.favoriteFox.foxNumber) { %>Endre<% } else { %>Velg<% } %> favorittrev:</label>
+                    <div class="custom-dropdown">
+                        <input type="hidden" name="foxNumber" id="foxNumber" required>
+                        <div class="dropdown-selected" id="dropdown-selected">
+                            <% if (user.favoriteFox && user.favoriteFox.foxNumber) { %>
+                                <img src="<%= user.favoriteFox.imageUrl %>" alt="Fox <%= user.favoriteFox.foxNumber %>" class="dropdown-fox-image">
+                                <span>Rev #<%= user.favoriteFox.foxNumber %></span>
+                            <% } else { %>
+                                <span>Velg en rev...</span>
+                            <% } %>
+                            <div class="dropdown-arrow">▼</div>
+                        </div>
+                        <div class="dropdown-options" id="dropdown-options">
+                            <% if (!user.favoriteFox || !user.favoriteFox.foxNumber) { %>
+                                <div class="dropdown-option" data-value="">
+                                    <span>Velg en rev...</span>
+                                </div>
+                            <% } %>
+                            <% allFoxes.forEach(fox => { %>
+                            <div class="dropdown-option" data-value="<%= fox.foxNumber %>">
+                                <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" class="dropdown-fox-image" loading="lazy">
+                                <div class="dropdown-fox-info">
+                                    <span class="dropdown-fox-name">Rev #<%= fox.foxNumber %></span>
+                                    <span class="dropdown-fox-votes"><%= fox.totalVotes %> stemmer</span>
+                                </div>
+                            </div>
+                            <% }) %>
+                        </div>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Sett favoritt</button>
             </form>
@@ -197,6 +220,66 @@ document.addEventListener('DOMContentLoaded', function() {
         
         newPasswordInput.addEventListener('input', validatePasswords);
         confirmPasswordInput.addEventListener('input', validatePasswords);
+    }
+
+    // Custom dropdown functionality
+    const dropdownSelected = document.getElementById('dropdown-selected');
+    const dropdownOptions = document.getElementById('dropdown-options');
+    const hiddenInput = document.getElementById('foxNumber');
+    
+    if (dropdownSelected && dropdownOptions && hiddenInput) {
+        // Toggle dropdown
+        dropdownSelected.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdownSelected.classList.toggle('open');
+            dropdownOptions.classList.toggle('show');
+        });
+
+        // Select option
+        dropdownOptions.addEventListener('click', function(e) {
+            const option = e.target.closest('.dropdown-option');
+            if (!option) return;
+
+            const value = option.getAttribute('data-value');
+            const img = option.querySelector('.dropdown-fox-image');
+            const name = option.querySelector('.dropdown-fox-name');
+
+            // Update hidden input
+            hiddenInput.value = value;
+
+            // Update selected display
+            if (value && img && name) {
+                dropdownSelected.innerHTML = `
+                    <img src="${img.src}" alt="${img.alt}" class="dropdown-fox-image">
+                    <span>${name.textContent}</span>
+                    <div class="dropdown-arrow">▼</div>
+                `;
+            } else {
+                dropdownSelected.innerHTML = `
+                    <span>Velg en rev...</span>
+                    <div class="dropdown-arrow">▼</div>
+                `;
+            }
+
+            // Close dropdown
+            dropdownSelected.classList.remove('open');
+            dropdownOptions.classList.remove('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function() {
+            dropdownSelected.classList.remove('open');
+            dropdownOptions.classList.remove('show');
+        });
+
+        // Handle image loading errors in dropdown
+        const dropdownImages = dropdownOptions.querySelectorAll('.dropdown-fox-image');
+        dropdownImages.forEach(img => {
+            img.addEventListener('error', function() {
+                this.style.display = 'none';
+            });
+        });
     }
 });
 </script>

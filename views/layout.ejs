@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foxting - Stem på den søteste reven!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">🦊 Fox Voting</a>
+            <a href="/" class="nav-brand">🦊 Foxting </a>
             <div class="nav-links">
                 <a href="/">Hjem</a>
                 <a href="/leaderboard">Leaderboard</a>
+                <a href="/faq">FAQ</a>
                 <% if (user) { %>
                     <a href="/profile">Min Profil</a>
                     <span class="user-info">Hei, <%= user.username %>!</span>
@@ -31,10 +35,6 @@
     <main class="main-content">
         <%- body %>
     </main>
-
-    <footer class="footer">
-        <p>&copy; 2025 Fox Voting. Laget for ITK2004 eksamen.</p>
-    </footer>
 
     <script src="/js/main.js"></script>
 </body>

@@ -10,11 +10,11 @@
 
     <% if (trendingFoxes && trendingFoxes.length > 0) { %>
     <section class="trending-section">
-        <h2>🔥 Dagens trending rever</h2>
+        <h2>🔥 Dagens trending rever 🔥</h2>
         <div class="trending-grid">
             <% trendingFoxes.forEach(fox => { %>
             <div class="trending-fox">
-                <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" loading="lazy">
+                <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" loading="lazy" class="trending-fox-image" data-fox-number="<%= fox.foxNumber %>">
                 <div class="trending-info">
                     <span class="fox-number">Rev #<%= fox.foxNumber %></span>
                     <span class="vote-count"><%= fox.totalVotes %> stemmer</span>
@@ -27,5 +27,271 @@
 </div>
 
 <div id="toast-container"></div>
+
+<!-- Image Popup Modal -->
+<div id="image-popup" class="image-popup">
+    <div class="popup-overlay"></div>
+    <div class="popup-content">
+        <button class="popup-close">&times;</button>
+        <img id="popup-image" src="" alt="">
+        <div class="popup-info">
+            <span id="popup-fox-number"></span>
+            <span id="popup-vote-count"></span>
+        </div>
+    </div>
+</div>
+
+<style>
+.popular-fox-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.popular-fox-popup.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+.popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: popupSlideIn 0.3s ease-out;
+}
+
+@keyframes popupSlideIn {
+    from {
+        transform: translate(-50%, -60%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
+}
+
+.popup-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s ease;
+}
+
+.popup-close:hover {
+    color: #333;
+}
+
+.popular-fox-popup h3 {
+    margin: 0 0 1rem 0;
+    color: #ff6b35;
+    font-size: 1.4rem;
+}
+
+.popular-fox-display img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem;
+}
+
+.popular-fox-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.popular-fox-info .fox-number {
+    font-weight: bold;
+    color: #ff6b35;
+}
+
+.popular-fox-info .vote-count {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Side Popup Styles */
+.side-popup {
+    position: fixed;
+    top: 20px;
+    right: -400px;
+    width: 350px;
+    z-index: 1500;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.side-popup.show {
+    right: 20px;
+}
+
+.side-popup-content {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    backdrop-filter: blur(20px);
+}
+
+.side-popup-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s ease;
+}
+
+.side-popup-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.side-popup-text {
+    font-size: 1rem;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.side-popup-text strong {
+    font-weight: 700;
+}
+
+.image-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.image-popup.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    max-width: 90%;
+    width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: popupSlideIn 0.3s ease-out;
+}
+
+.popup-content img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.popup-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: #333;
+}
+
+@media (max-width: 480px) {
+    .side-popup {
+        right: -320px;
+        width: 300px;
+    }
+    
+    .side-popup.show {
+        right: 10px;
+    }
+    
+    .side-popup-content {
+        padding: 1.25rem;
+    }
+    
+    .side-popup-text {
+        font-size: 0.9rem;
+    }
+    
+    .popup-content {
+        padding: 1.5rem;
+        margin: 0 1rem;
+    }
+    
+    .popular-fox-display img {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .popular-fox-popup h3 {
+        font-size: 1.2rem;
+    }
+}
+</style>
 
 <script src="/js/voting.js"></script>
