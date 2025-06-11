@@ -55,14 +55,14 @@ app.use((req, res, next) => {
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000 * 20, // 300 minutes (5 hours)
+  max: 100 * 25 // limit each IP to 2500 requests per 5 hours
 });
 app.use(limiter);
 
 const voteLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10 // limit voting to 10 per minute
+  windowMs: 60 * 1000 * 30, // 30 minutes
+  max: 10 * 25 // limit voting to 250 per 30 minutes
 });
 
 // Middleware

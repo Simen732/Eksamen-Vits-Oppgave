@@ -106,18 +106,27 @@ router.post('/vote/:foxNumber', authenticateToken, async (req, res) => {
     await fox.save();
     console.log('Vote saved successfully');
 
-    // Emit real-time update
+    // Emit comprehensive real-time update
     const io = req.app.get('io');
-    io.emit('voteUpdate', {
+    const updateData = {
       foxNumber: fox.foxNumber,
+      imageUrl: fox.imageUrl,
       totalVotes: fox.totalVotes,
-      registeredVotes: fox.registeredVotes
-    });
+      registeredVotes: fox.registeredVotes,
+      timestamp: new Date()
+    };
+    
+    // Emit to all connected clients
+    io.emit('voteUpdate', updateData);
+    io.emit('foxVoteUpdate', updateData); // More specific event
+    
+    console.log('Emitted vote update:', updateData);
 
     res.json({ 
       success: true, 
       message: `Stemme registrert for Rev ${foxNumber}!`,
-      totalVotes: fox.totalVotes 
+      totalVotes: fox.totalVotes,
+      registeredVotes: fox.registeredVotes
     });
   } catch (error) {
     console.error('Voting error:', error);

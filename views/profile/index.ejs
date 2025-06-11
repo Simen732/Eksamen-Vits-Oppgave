@@ -155,7 +155,7 @@
                         <strong>Rev #<%= fox.foxNumber %></strong>
                         <div class="vote-details">
                             <span class="my-votes"><%= fox.userVoteCount %> mine stemmer</span>
-                            <span class="total-votes"><%= fox.totalVotes %> totalt</span>
+                            <span class="total-votes" data-fox-votes="<%= fox.foxNumber %>"><%= fox.totalVotes %> totalt</span>
                         </div>
                     </div>
                 </div>
@@ -280,6 +280,62 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.style.display = 'none';
             });
         });
+    }
+
+    // Socket.io for real-time updates on profile page
+    if (typeof io !== 'undefined') {
+        const socket = io();
+        
+        socket.on('connect', function() {
+            console.log('Connected to profile real-time updates');
+        });
+        
+        socket.on('foxVoteUpdate', function(data) {
+            console.log('Profile: Fox vote update received:', data);
+            updateProfileVoteCounts(data);
+        });
+    }
+    
+    // Update vote counts in profile
+    function updateProfileVoteCounts(data) {
+        const foxNumber = data.foxNumber;
+        
+        // Update personal voting statistics
+        const voteElements = document.querySelectorAll(`[data-fox-votes="${foxNumber}"]`);
+        voteElements.forEach(element => {
+            if (element.classList.contains('total-votes')) {
+                element.textContent = `${data.totalVotes} totalt`;
+                
+                // Add visual feedback
+                element.classList.add('vote-count-updated');
+                setTimeout(() => {
+                    element.classList.remove('vote-count-updated');
+                }, 2000);
+            }
+        });
+        
+        // Update favorite fox display if it matches
+        const favoriteFoxDisplay = document.querySelector('.favorite-fox-display');
+        if (favoriteFoxDisplay) {
+            const foxNumberText = favoriteFoxDisplay.querySelector('p strong');
+            if (foxNumberText && foxNumberText.textContent.includes(foxNumber.toString())) {
+                // Add real-time vote count to favorite fox display
+                let voteCountElement = favoriteFoxDisplay.querySelector('.favorite-vote-count');
+                if (!voteCountElement) {
+                    voteCountElement = document.createElement('small');
+                    voteCountElement.className = 'favorite-vote-count';
+                    voteCountElement.style.display = 'block';
+                    voteCountElement.style.color = '#64748b';
+                    voteCountElement.style.marginTop = '0.5rem';
+                    favoriteFoxDisplay.appendChild(voteCountElement);
+                }
+                voteCountElement.textContent = `${data.totalVotes} stemmer totalt`;
+                voteCountElement.classList.add('vote-count-updated');
+                setTimeout(() => {
+                    voteCountElement.classList.remove('vote-count-updated');
+                }, 2000);
+            }
+        }
     }
 });
 </script>

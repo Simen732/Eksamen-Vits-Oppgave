@@ -5,7 +5,7 @@
     <% if (foxes && foxes.length > 0) { %>
     <div class="leaderboard-list">
         <% foxes.forEach((fox, index) => { %>
-        <div class="leaderboard-item <%= index < 3 ? 'top-' + (index + 1) : '' %>">
+        <div class="leaderboard-item <%= index < 3 ? 'top-' + (index + 1) : '' %>" data-fox-number="<%= fox.foxNumber %>">
             <div class="rank">
                 <% if (index === 0) { %>🥇
                 <% } else if (index === 1) { %>🥈
@@ -19,8 +19,8 @@
             <div class="fox-info">
                 <h3>Rev #<%= fox.foxNumber %></h3>
                 <div class="vote-stats">
-                    <span class="registered-votes"><%= fox.registeredVotes %> registrerte stemmer</span>
-                    <span class="total-votes"><%= fox.totalVotes %> totale stemmer</span>
+                    <span class="registered-votes" data-fox-votes="<%= fox.foxNumber %>"><%= fox.registeredVotes %> registrerte stemmer</span>
+                    <span class="total-votes" data-fox-votes="<%= fox.foxNumber %>"><%= fox.totalVotes %> totale stemmer</span>
                 </div>
             </div>
         </div>
@@ -33,3 +33,53 @@
     </div>
     <% } %>
 </div>
+
+<script>
+// Real-time leaderboard updates
+if (typeof io !== 'undefined') {
+    const socket = io();
+    
+    socket.on('connect', function() {
+        console.log('Connected to leaderboard real-time updates');
+    });
+    
+    socket.on('foxVoteUpdate', function(data) {
+        console.log('Leaderboard: Fox vote update received:', data);
+        updateLeaderboardVoteCounts(data);
+    });
+}
+
+function updateLeaderboardVoteCounts(data) {
+    const foxNumber = data.foxNumber;
+    
+    // Find the leaderboard item for this fox
+    const leaderboardItem = document.querySelector(`[data-fox-number="${foxNumber}"]`);
+    if (leaderboardItem) {
+        // Update vote counts
+        const totalVotesElement = leaderboardItem.querySelector('.total-votes');
+        const registeredVotesElement = leaderboardItem.querySelector('.registered-votes');
+        
+        if (totalVotesElement) {
+            totalVotesElement.textContent = `${data.totalVotes} totale stemmer`;
+            totalVotesElement.classList.add('vote-count-updated');
+            setTimeout(() => {
+                totalVotesElement.classList.remove('vote-count-updated');
+            }, 2000);
+        }
+        
+        if (registeredVotesElement) {
+            registeredVotesElement.textContent = `${data.registeredVotes} registrerte stemmer`;
+            registeredVotesElement.classList.add('vote-count-updated');
+            setTimeout(() => {
+                registeredVotesElement.classList.remove('vote-count-updated');
+            }, 2000);
+        }
+        
+        // Add visual feedback to the entire item
+        leaderboardItem.classList.add('vote-updated');
+        setTimeout(() => {
+            leaderboardItem.classList.remove('vote-updated');
+        }, 3000);
+    }
+}
+</script>

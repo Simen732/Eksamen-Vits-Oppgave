@@ -319,7 +319,82 @@ function closeImagePopup() {
 // Socket.io for real-time updates
 if (typeof io !== 'undefined') {
     const socket = io();
+    
+    socket.on('connect', function() {
+        console.log('Connected to voting server for real-time updates');
+    });
+    
     socket.on('voteUpdate', function(data) {
-        console.log('Vote update:', data);
+        console.log('Vote update received:', data);
+        updateVoteCounts(data);
+    });
+    
+    socket.on('foxVoteUpdate', function(data) {
+        console.log('Fox-specific vote update:', data);
+        updateVoteCounts(data);
+        updateTrendingFoxes(data);
+    });
+}
+
+// Update vote counts in real-time
+function updateVoteCounts(data) {
+    const foxNumber = data.foxNumber;
+    
+    // Update trending fox vote counts
+    const trendingFoxes = document.querySelectorAll('.trending-fox');
+    trendingFoxes.forEach(fox => {
+        const img = fox.querySelector('.trending-fox-image');
+        if (img && img.getAttribute('data-fox-number') == foxNumber) {
+            const voteCountElement = fox.querySelector('.vote-count');
+            if (voteCountElement) {
+                voteCountElement.textContent = `${data.totalVotes} stemmer`;
+                
+                // Add visual feedback for update
+                fox.classList.add('vote-updated');
+                setTimeout(() => {
+                    fox.classList.remove('vote-updated');
+                }, 2000);
+            }
+        }
+    });
+    
+    // Update any displayed vote counts in popups
+    const popupVoteCount = document.getElementById('popup-vote-count');
+    const popupFoxNumber = document.getElementById('popup-fox-number');
+    if (popupVoteCount && popupFoxNumber && 
+        popupFoxNumber.textContent.includes(foxNumber.toString())) {
+        popupVoteCount.textContent = `${data.totalVotes} stemmer`;
+    }
+    
+    // Update any other fox-specific vote displays
+    updateFoxVoteDisplays(foxNumber, data.totalVotes, data.registeredVotes);
+}
+
+// Update trending foxes section
+function updateTrendingFoxes(data) {
+    // Show notification for significant vote milestones
+    if (data.totalVotes % 10 === 0 && data.totalVotes > 0) {
+        showToast(`🎉 Rev #${data.foxNumber} har nådd ${data.totalVotes} stemmer!`, 'info');
+    }
+}
+
+// Update fox vote displays throughout the page
+function updateFoxVoteDisplays(foxNumber, totalVotes, registeredVotes) {
+    // Update any elements with fox-specific vote counts
+    const voteElements = document.querySelectorAll(`[data-fox-votes="${foxNumber}"]`);
+    voteElements.forEach(element => {
+        if (element.classList.contains('total-votes')) {
+            element.textContent = `${totalVotes} totalt`;
+        } else if (element.classList.contains('registered-votes')) {
+            element.textContent = `${registeredVotes} registrerte stemmer`;
+        } else {
+            element.textContent = `${totalVotes} stemmer`;
+        }
+        
+        // Add update animation
+        element.classList.add('vote-count-updated');
+        setTimeout(() => {
+            element.classList.remove('vote-count-updated');
+        }, 1500);
     });
 }

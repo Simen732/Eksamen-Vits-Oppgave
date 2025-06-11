@@ -13,11 +13,11 @@
         <h2>🔥 Dagens trending rever 🔥</h2>
         <div class="trending-grid">
             <% trendingFoxes.forEach(fox => { %>
-            <div class="trending-fox">
+            <div class="trending-fox" data-fox-number="<%= fox.foxNumber %>">
                 <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" loading="lazy" class="trending-fox-image" data-fox-number="<%= fox.foxNumber %>">
                 <div class="trending-info">
                     <span class="fox-number">Rev #<%= fox.foxNumber %></span>
-                    <span class="vote-count"><%= fox.totalVotes %> stemmer</span>
+                    <span class="vote-count" data-fox-votes="<%= fox.foxNumber %>"><%= fox.totalVotes %> stemmer</span>
                 </div>
             </div>
             <% }) %>
