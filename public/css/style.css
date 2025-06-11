@@ -179,15 +179,24 @@ body {
 /* Loading placeholder */
 .fox-option img:not([src]), 
 .trending-fox img:not([src]), 
-.fox-image img:not([src]) {
+.fox-image img:not([src]),
+.profile-picture:not([src]) {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
 }
 
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+/* Fallback for broken profile pictures */
+.profile-picture {
+    background-color: #f8f9fa;
+    background-image: url('/images/placeholder.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.profile-picture[src*="placeholder.png"] {
+    object-fit: cover;
 }
 
 .vote-btn {
@@ -286,15 +295,24 @@ body {
 /* Loading placeholder */
 .fox-option img:not([src]), 
 .trending-fox img:not([src]), 
-.fox-image img:not([src]) {
+.fox-image img:not([src]),
+.profile-picture:not([src]) {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
 }
 
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+/* Fallback for broken profile pictures */
+.profile-picture {
+    background-color: #f8f9fa;
+    background-image: url('/images/placeholder.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.profile-picture[src*="placeholder.png"] {
+    object-fit: cover;
 }
 
 .trending-info {
