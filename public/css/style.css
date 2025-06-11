@@ -548,7 +548,7 @@ body {
 
 /* Profile Page Styles */
 .profile-container {
-    max-width: 1200px;
+    max-width: 1400px; /* Increased from 1200px */
     margin: 0 auto;
 }
 
@@ -562,8 +562,9 @@ body {
 
 .profile-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Increased from 350px */
     gap: 2rem;
+    align-items: start; /* Align to top instead of stretch */
 }
 
 .profile-card {
@@ -571,7 +572,9 @@ body {
     border-radius: 15px;
     padding: 2rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    height: fit-content;
+    height: 100%; /* Make all cards same height */
+    display: flex;
+    flex-direction: column;
 }
 
 .profile-card h3 {
@@ -751,6 +754,7 @@ body {
 /* Personal Voting Statistics */
 .voting-stats-card {
     grid-column: 1 / -1;
+    height: auto; /* Override the height: 100% for the full-width card */
 }
 
 .stats-description {
@@ -957,8 +961,14 @@ body {
         background-color: #f8f9fa;
     }
 
-    .profile-container h1 {
-        font-size: 2rem;
+    .profile-container {
+        max-width: 100%;
+        padding: 0 1rem;
+    }
+    
+    .profile-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .profile-card {
