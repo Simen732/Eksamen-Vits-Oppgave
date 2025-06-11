@@ -54,7 +54,7 @@ router.post('/register', [
 
     res.cookie('token', token, { 
       httpOnly: true, 
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Force HTTP for development/VM
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -101,7 +101,7 @@ router.post('/login', [
 
     res.cookie('token', token, { 
       httpOnly: true, 
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Force HTTP for development/VM
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 

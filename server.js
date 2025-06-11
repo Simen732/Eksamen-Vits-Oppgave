@@ -21,21 +21,23 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Security middleware
+// Security middleware - Modified for HTTP-only
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "https://randomfox.ca", "https:", "data:", "blob:"],
-      connectSrc: ["'self'", "ws:", "wss:", "https://randomfox.ca"],
+      imgSrc: ["'self'", "https://randomfox.ca", "http:", "https:", "data:", "blob:"],
+      connectSrc: ["'self'", "ws:", "wss:", "http:", "https:", "https://randomfox.ca"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"]
     }
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  hsts: false, // Disable HTTPS Strict Transport Security
+  httpsOnly: false // Disable HTTPS-only mode
 }));
 
 // Rate limiting
