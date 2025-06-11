@@ -14,7 +14,7 @@
         <div class="profile-card">
             <div class="profile-header">
                 <div class="profile-picture-container">
-                    <img src="<%= user.profilePicture || '/images/default-avatar.png' %>" 
+                    <img src="<%= user.profilePicture && user.profilePicture !== '/images/default-avatar.png' ? user.profilePicture : '/images/placeholder.png' %>" 
                          alt="Profilbilde" 
                          class="profile-picture">
                     <div class="profile-picture-overlay">
