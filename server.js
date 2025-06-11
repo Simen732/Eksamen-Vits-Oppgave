@@ -10,6 +10,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
+const fs = require('fs');
 
 const authRoutes = require('./routes/auth');
 const voteRoutes = require('./routes/vote');
@@ -81,6 +82,17 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/foxvoting
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'public/uploads/profiles');
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true, mode: 0o755 });
+    console.log('Created uploads directory');
+  }
+} catch (error) {
+  console.warn('Could not create uploads directory:', error.message);
+}
 
 // Socket.io for real-time updates
 io.on('connection', (socket) => {

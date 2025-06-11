@@ -9,14 +9,23 @@ const { authenticateToken, requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Configure multer for profile picture uploads
+// Configure multer for profile picture uploads with better error handling
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = path.join(__dirname, '../public/uploads/profiles');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    
+    // Create directory with proper permissions if it doesn't exist
+    try {
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
+      }
+      // Check if directory is writable
+      fs.accessSync(uploadDir, fs.constants.W_OK);
+      cb(null, uploadDir);
+    } catch (error) {
+      console.error('Upload directory error:', error);
+      cb(new Error('Upload directory is not accessible. Please check permissions.'));
     }
-    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -126,8 +135,13 @@ router.post('/upload-picture', authenticateToken, requireAuth, upload.single('pr
         user.profilePicture !== '' &&
         !user.profilePicture.includes('placeholder')) {
       const oldPicturePath = path.join(__dirname, '../public', user.profilePicture);
-      if (fs.existsSync(oldPicturePath)) {
-        fs.unlinkSync(oldPicturePath);
+      try {
+        if (fs.existsSync(oldPicturePath)) {
+          fs.unlinkSync(oldPicturePath);
+        }
+      } catch (deleteError) {
+        console.warn('Could not delete old profile picture:', deleteError.message);
+        // Continue anyway - not critical
       }
     }
 
@@ -140,7 +154,23 @@ router.post('/upload-picture', authenticateToken, requireAuth, upload.single('pr
     res.redirect('/profile?success=Profilbilde oppdatert!');
   } catch (error) {
     console.error('Profile picture upload error:', error);
-    res.redirect('/profile?error=Kunne ikke laste opp profilbilde');
+    
+    // Clean up uploaded file if it exists
+    if (req.file && req.file.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (cleanupError) {
+        console.error('Could not clean up uploaded file:', cleanupError.message);
+      }
+    }
+    
+    if (error.code === 'EACCES') {
+      res.redirect('/profile?error=Ingen tilgang til å lagre filer. Kontakt administrator.');
+    } else if (error.message.includes('Upload directory')) {
+      res.redirect('/profile?error=Opplastingsmappe er ikke tilgjengelig. Kontakt administrator.');
+    } else {
+      res.redirect('/profile?error=Kunne ikke laste opp profilbilde');
+    }
   }
 });
 
