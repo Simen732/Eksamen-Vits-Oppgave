@@ -4,8 +4,9 @@
   "description": "Fox voting application with user authentication",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "NODE_ENV=development FORCE_HTTP=true node server.js",
+    "dev": "NODE_ENV=development FORCE_HTTP=true nodemon server.js",
+    "start:http": "NODE_ENV=development FORCE_HTTP=true PORT=3000 node server.js"
   },
   "dependencies": {
     "argon2": "^0.30.3",

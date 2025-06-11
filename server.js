@@ -37,7 +37,8 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
   hsts: false, // Disable HTTPS Strict Transport Security
-  httpsOnly: false // Disable HTTPS-only mode
+  httpsOnly: false, // Disable HTTPS-only mode
+  forceHTTPS: false // Explicitly disable HTTPS forcing
 }));
 
 // Rate limiting
