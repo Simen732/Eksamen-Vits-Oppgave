@@ -31,15 +31,26 @@ app.use(helmet({
       imgSrc: ["'self'", "https://randomfox.ca", "http:", "https:", "data:", "blob:"],
       connectSrc: ["'self'", "ws:", "wss:", "http:", "https:", "https://randomfox.ca"],
       objectSrc: ["'none'"],
-      mediaSrc: ["'self'"]
+      mediaSrc: ["'self'"],
+      upgradeInsecureRequests: null // Explicitly disable upgrade insecure requests
     }
   },
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  hsts: false, // Disable HTTPS Strict Transport Security
-  httpsOnly: false, // Disable HTTPS-only mode
-  forceHTTPS: false // Explicitly disable HTTPS forcing
+  hsts: false,
+  httpsOnly: false,
+  forceHTTPS: false,
+  upgradeInsecureRequests: false // Explicitly disable
 }));
+
+// Force HTTP middleware - prevents HTTPS redirects
+app.use((req, res, next) => {
+  if (req.header('x-forwarded-proto') === 'https') {
+    res.redirect(`http://${req.get('Host')}${req.url}`);
+  } else {
+    next();
+  }
+});
 
 // Rate limiting
 const limiter = rateLimit({
@@ -56,11 +67,7 @@ const voteLimiter = rateLimit({
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser({
-  secure: false, // Disable secure cookies
-  httpOnly: true,
-  sameSite: 'lax'
-}));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // View engine setup
