@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foxting - Stem på den søteste reven!</title>
+    <title>JokeRater - Rate the funniest jokes!</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,20 +13,20 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">🦊 Foxting </a>
+            <a href="/" class="nav-brand">😂 JokeRater </a>
             <div class="nav-links">
-                <a href="/">Hjem</a>
-                <a href="/leaderboard">Leaderboard</a>
+                <a href="/">Home</a>
+                <a href="/leaderboard">Top Jokes</a>
                 <a href="/faq">FAQ</a>
                 <% if (user) { %>
-                    <a href="/profile">Min Profil</a>
-                    <span class="user-info">Hei, <%= user.username %>!</span>
+                    <a href="/profile">My Profile</a>
+                    <span class="user-info">Hi, <%= user.username %>!</span>
                     <form action="/auth/logout" method="POST" style="display: inline;">
-                        <button type="submit" class="btn btn-outline">Logg ut</button>
+                        <button type="submit" class="btn btn-outline">Logout</button>
                     </form>
                 <% } else { %>
-                    <a href="/auth/login" class="btn btn-outline">Logg inn</a>
-                    <a href="/auth/register" class="btn btn-primary">Registrer</a>
+                    <a href="/auth/login" class="btn btn-outline">Login</a>
+                    <a href="/auth/register" class="btn btn-primary">Register</a>
                 <% } %>
             </div>
         </div>

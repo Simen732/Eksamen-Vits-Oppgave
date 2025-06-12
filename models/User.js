@@ -31,17 +31,21 @@ const userSchema = new mongoose.Schema({
     maxlength: 500,
     default: ''
   },
-  favoriteFox: {
-    foxNumber: {
-      type: Number,
+  favoriteJoke: {
+    jokeId: {
+      type: String,
       default: null
     },
-    imageUrl: {
+    text: {
       type: String,
       default: null
     }
   },
-  totalVotes: {
+  totalRatings: {
+    type: Number,
+    default: 0
+  },
+  averageRatingGiven: {
     type: Number,
     default: 0
   },

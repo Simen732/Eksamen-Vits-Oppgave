@@ -13,7 +13,7 @@ const expressLayouts = require('express-ejs-layouts');
 const fs = require('fs');
 
 const authRoutes = require('./routes/auth');
-const voteRoutes = require('./routes/vote');
+const jokeRoutes = require('./routes/joke');
 const leaderboardRoutes = require('./routes/leaderboard');
 const profileRoutes = require('./routes/profile');
 const { authenticateToken } = require('./middleware/auth');
@@ -108,7 +108,7 @@ app.set('io', io);
 
 // Routes
 app.use('/auth', authRoutes);
-app.use('/vote', voteLimiter, voteRoutes);
+app.use('/joke', jokeRoutes);
 app.use('/leaderboard', leaderboardRoutes);
 app.use('/profile', profileRoutes);
 
@@ -119,56 +119,26 @@ app.get('/faq', authenticateToken, (req, res) => {
 
 // Main page
 app.get('/', authenticateToken, async (req, res) => {
-  const Fox = require('./models/Fox');
+  console.log('Main page accessed, user:', req.user ? req.user.username : 'anonymous');
+  const Joke = require('./models/Joke');
   
   try {
-    // Get trending foxes (most votes today)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const trendingFoxes = await Fox.aggregate([
-      {
-        $match: {
-          totalVotes: { $gt: 0 }
-        }
-      },
-      {
-        $addFields: {
-          todayVotes: {
-            $size: {
-              $filter: {
-                input: "$votes",
-                cond: { $gte: ["$$this.date", today] }
-              }
-            }
-          }
-        }
-      },
-      {
-        $sort: { todayVotes: -1, totalVotes: -1 }
-      },
-      {
-        $limit: 5
-      },
-      {
-        $project: {
-          foxNumber: 1,
-          imageUrl: 1,
-          totalVotes: 1,
-          todayVotes: 1
-        }
-      }
-    ]);
+    // Get top rated jokes
+    const topJokes = await Joke.find({ totalRatings: { $gt: 0 } })
+      .sort({ averageRating: -1, totalRatings: -1 })
+      .limit(5)
+      .select('jokeId text category averageRating totalRatings');
 
+    console.log('Found top jokes:', topJokes.length);
     res.render('index', { 
       user: req.user,
-      trendingFoxes
+      topJokes
     });
   } catch (error) {
     console.error('Error loading main page:', error);
     res.render('index', { 
       user: req.user,
-      trendingFoxes: []
+      topJokes: []
     });
   }
 });

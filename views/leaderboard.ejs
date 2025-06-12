@@ -1,11 +1,11 @@
 <div class="leaderboard-container">
     <h1>🏆 Leaderboard</h1>
-    <p class="subtitle">De mest populære revene basert på stemmer fra registrerte brukere</p>
+    <p class="subtitle">De mest populære vitsene basert på ratings fra registrerte brukere</p>
 
-    <% if (foxes && foxes.length > 0) { %>
+    <% if (jokes && jokes.length > 0) { %>
     <div class="leaderboard-list">
-        <% foxes.forEach((fox, index) => { %>
-        <div class="leaderboard-item <%= index < 3 ? 'top-' + (index + 1) : '' %>" data-fox-number="<%= fox.foxNumber %>">
+        <% jokes.forEach((joke, index) => { %>
+        <div class="leaderboard-item <%= index < 3 ? 'top-' + (index + 1) : '' %>" data-joke-id="<%= joke.jokeId %>">
             <div class="rank">
                 <% if (index === 0) { %>🥇
                 <% } else if (index === 1) { %>🥈
@@ -13,14 +13,13 @@
                 <% } else { %>#<%= index + 1 %>
                 <% } %>
             </div>
-            <div class="fox-image">
-                <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" loading="lazy" crossorigin="anonymous">
-            </div>
-            <div class="fox-info">
-                <h3>Rev #<%= fox.foxNumber %></h3>
-                <div class="vote-stats">
-                    <span class="registered-votes" data-fox-votes="<%= fox.foxNumber %>"><%= fox.registeredVotes %> registrerte stemmer</span>
-                    <span class="total-votes" data-fox-votes="<%= fox.foxNumber %>"><%= fox.totalVotes %> totale stemmer</span>
+            <div class="joke-info">
+                <h3>Vits #<%= joke.jokeId %></h3>
+                <p class="joke-text"><%= joke.text %></p>
+                <div class="rating-stats">
+                    <span class="average-rating">⭐ <%= joke.averageRating %>/5</span>
+                    <span class="registered-ratings" data-joke-ratings="<%= joke.jokeId %>"><%= joke.registeredRatings %> registrerte ratings</span>
+                    <span class="total-ratings" data-joke-ratings="<%= joke.jokeId %>"><%= joke.totalRatings %> totale ratings</span>
                 </div>
             </div>
         </div>
@@ -28,8 +27,8 @@
     </div>
     <% } else { %>
     <div class="empty-state">
-        <p>Ingen stemmer registrert ennå. Vær den første til å stemme!</p>
-        <a href="/" class="btn btn-primary">Start stemming</a>
+        <p>Ingen ratings registrert ennå. Vær den første til å rate!</p>
+        <a href="/" class="btn btn-primary">Start rating</a>
     </div>
     <% } %>
 </div>
@@ -43,42 +42,51 @@ if (typeof io !== 'undefined') {
         console.log('Connected to leaderboard real-time updates');
     });
     
-    socket.on('foxVoteUpdate', function(data) {
-        console.log('Leaderboard: Fox vote update received:', data);
-        updateLeaderboardVoteCounts(data);
+    socket.on('jokeRatingUpdate', function(data) {
+        console.log('Leaderboard: Joke rating update received:', data);
+        updateLeaderboardRatingCounts(data);
     });
 }
 
-function updateLeaderboardVoteCounts(data) {
-    const foxNumber = data.foxNumber;
+function updateLeaderboardRatingCounts(data) {
+    const jokeId = data.jokeId;
     
-    // Find the leaderboard item for this fox
-    const leaderboardItem = document.querySelector(`[data-fox-number="${foxNumber}"]`);
+    // Find the leaderboard item for this joke
+    const leaderboardItem = document.querySelector(`[data-joke-id="${jokeId}"]`);
     if (leaderboardItem) {
-        // Update vote counts
-        const totalVotesElement = leaderboardItem.querySelector('.total-votes');
-        const registeredVotesElement = leaderboardItem.querySelector('.registered-votes');
+        // Update rating counts
+        const totalRatingsElement = leaderboardItem.querySelector('.total-ratings');
+        const registeredRatingsElement = leaderboardItem.querySelector('.registered-ratings');
+        const averageRatingElement = leaderboardItem.querySelector('.average-rating');
         
-        if (totalVotesElement) {
-            totalVotesElement.textContent = `${data.totalVotes} totale stemmer`;
-            totalVotesElement.classList.add('vote-count-updated');
+        if (totalRatingsElement) {
+            totalRatingsElement.textContent = `${data.totalRatings} totale ratings`;
+            totalRatingsElement.classList.add('rating-count-updated');
             setTimeout(() => {
-                totalVotesElement.classList.remove('vote-count-updated');
+                totalRatingsElement.classList.remove('rating-count-updated');
             }, 2000);
         }
         
-        if (registeredVotesElement) {
-            registeredVotesElement.textContent = `${data.registeredVotes} registrerte stemmer`;
-            registeredVotesElement.classList.add('vote-count-updated');
+        if (registeredRatingsElement) {
+            registeredRatingsElement.textContent = `${data.registeredRatings} registrerte ratings`;
+            registeredRatingsElement.classList.add('rating-count-updated');
             setTimeout(() => {
-                registeredVotesElement.classList.remove('vote-count-updated');
+                registeredRatingsElement.classList.remove('rating-count-updated');
+            }, 2000);
+        }
+        
+        if (averageRatingElement && data.averageRating) {
+            averageRatingElement.textContent = `⭐ ${data.averageRating}/5`;
+            averageRatingElement.classList.add('rating-count-updated');
+            setTimeout(() => {
+                averageRatingElement.classList.remove('rating-count-updated');
             }, 2000);
         }
         
         // Add visual feedback to the entire item
-        leaderboardItem.classList.add('vote-updated');
+        leaderboardItem.classList.add('rating-updated');
         setTimeout(() => {
-            leaderboardItem.classList.remove('vote-updated');
+            leaderboardItem.classList.remove('rating-updated');
         }, 3000);
     }
 }

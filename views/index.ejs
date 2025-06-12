@@ -1,23 +1,33 @@
-<div class="voting-container">
-    <h1>Hvilken rev er søtest? 🦊</h1>
-    <p class="subtitle">Klikk på bildet av reven du synes er søtest!</p>
+<div class="joke-container">
+    <h1>Rate the Joke! 😂</h1>
+    <p class="subtitle">Read the joke and give it a rating from 1 to 5 stars!</p>
 
-    <div id="voting-section" class="voting-section">
-        <div class="loading">Laster rever...</div>
+    <div id="joke-section" class="joke-section">
+        <div class="loading">Loading joke...</div>
     </div>
 
-    <div id="result-message" class="result-message" style="display: none;"></div>
+    <div id="rating-section" class="rating-section" style="display: none;">
+        <div class="star-rating">
+            <span class="star" data-rating="1">☆</span>
+            <span class="star" data-rating="2">☆</span>
+            <span class="star" data-rating="3">☆</span>
+            <span class="star" data-rating="4">☆</span>
+            <span class="star" data-rating="5">☆</span>
+        </div>
+        <button id="next-joke" class="btn btn-primary" disabled>Select a Rating First</button>
+    </div>
 
-    <% if (trendingFoxes && trendingFoxes.length > 0) { %>
-    <section class="trending-section">
-        <h2>🔥 Dagens trending rever 🔥</h2>
-        <div class="trending-grid">
-            <% trendingFoxes.forEach(fox => { %>
-            <div class="trending-fox" data-fox-number="<%= fox.foxNumber %>">
-                <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" loading="lazy" class="trending-fox-image" data-fox-number="<%= fox.foxNumber %>">
-                <div class="trending-info">
-                    <span class="fox-number">Rev #<%= fox.foxNumber %></span>
-                    <span class="vote-count" data-fox-votes="<%= fox.foxNumber %>"><%= fox.totalVotes %> stemmer</span>
+    <% if (topJokes && topJokes.length > 0) { %>
+    <section class="top-jokes-section">
+        <h2>🏆 Top Rated Jokes 🏆</h2>
+        <div class="jokes-grid">
+            <% topJokes.forEach((joke, index) => { %>
+            <div class="top-joke" data-joke-id="<%= joke.jokeId %>">
+                <div class="joke-rank">#<%= index + 1 %></div>
+                <div class="joke-text"><%= joke.text %></div>
+                <div class="joke-stats">
+                    <span class="rating">⭐ <%= joke.averageRating %></span>
+                    <span class="total-ratings">(<%= joke.totalRatings %> ratings)</span>
                 </div>
             </div>
             <% }) %>
@@ -28,270 +38,177 @@
 
 <div id="toast-container"></div>
 
-<!-- Image Popup Modal -->
-<div id="image-popup" class="image-popup">
-    <div class="popup-overlay"></div>
-    <div class="popup-content">
-        <button class="popup-close">&times;</button>
-        <img id="popup-image" src="" alt="">
-        <div class="popup-info">
-            <span id="popup-fox-number"></span>
-            <span id="popup-vote-count"></span>
-        </div>
-    </div>
-</div>
-
 <style>
-.popular-fox-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+.joke-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
-.popular-fox-popup.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.popup-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
-}
-
-.popup-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
+.joke-section {
+    background: var(--card-background);
     border-radius: 15px;
     padding: 2rem;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    animation: popupSlideIn 0.3s ease-out;
-}
-
-@keyframes popupSlideIn {
-    from {
-        transform: translate(-50%, -60%);
-        opacity: 0;
-    }
-    to {
-        transform: translate(-50%, -50%);
-        opacity: 1;
-    }
-}
-
-.popup-close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-    transition: color 0.2s ease;
-}
-
-.popup-close:hover {
-    color: #333;
-}
-
-.popular-fox-popup h3 {
-    margin: 0 0 1rem 0;
-    color: #ff6b35;
-    font-size: 1.4rem;
-}
-
-.popular-fox-display img {
-    width: 200px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    margin-bottom: 1rem;
-}
-
-.popular-fox-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f8f9fa;
-    padding: 0.8rem;
-    border-radius: 8px;
-    margin-top: 1rem;
-}
-
-.popular-fox-info .fox-number {
-    font-weight: bold;
-    color: #ff6b35;
-}
-
-.popular-fox-info .vote-count {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-/* Side Popup Styles */
-.side-popup {
-    position: fixed;
-    top: 20px;
-    right: -400px;
-    width: 350px;
-    z-index: 1500;
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.side-popup.show {
-    right: 20px;
-}
-
-.side-popup-content {
-    background: var(--primary-gradient);
-    color: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-    backdrop-filter: blur(20px);
-}
-
-.side-popup-close {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
+    margin: 2rem 0;
+    box-shadow: var(--shadow);
+    min-height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    transition: background 0.2s ease;
 }
 
-.side-popup-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.side-popup-text {
-    font-size: 1rem;
-    line-height: 1.4;
-    font-weight: 500;
-}
-
-.side-popup-text strong {
-    font-weight: 700;
-}
-
-.image-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.image-popup.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.popup-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-}
-
-.popup-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    border-radius: 15px;
-    padding: 2rem;
-    max-width: 90%;
-    width: 500px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+.joke-display {
     text-align: center;
-    animation: popupSlideIn 0.3s ease-out;
 }
 
-.popup-content img {
-    width: 100%;
-    height: auto;
-    border-radius: 10px;
+.joke-text {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    color: var(--text-primary);
     margin-bottom: 1rem;
 }
 
-.popup-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 1rem;
-    color: #333;
+.joke-category {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    text-transform: capitalize;
 }
 
-@media (max-width: 480px) {
-    .side-popup {
-        right: -320px;
-        width: 300px;
+.rating-section {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.star {
+    font-size: 2.5rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    user-select: none;
+}
+
+.star:hover,
+.star.hover {
+    color: #ffd700;
+}
+
+.star.selected {
+    color: #ffd700;
+}
+
+.rating-result {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.rating-result h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+}
+
+.top-jokes-section {
+    margin-top: 3rem;
+}
+
+.jokes-grid {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.top-joke {
+    background: var(--card-background);
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.joke-rank {
+    background: var(--primary-color);
+    color: white;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.top-joke .joke-text {
+    flex: 1;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.joke-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--primary-color);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .joke-container {
+        padding: 1rem;
     }
     
-    .side-popup.show {
-        right: 10px;
-    }
-    
-    .side-popup-content {
-        padding: 1.25rem;
-    }
-    
-    .side-popup-text {
-        font-size: 0.9rem;
-    }
-    
-    .popup-content {
-        padding: 1.5rem;
-        margin: 0 1rem;
-    }
-    
-    .popular-fox-display img {
-        width: 150px;
-        height: 150px;
-    }
-    
-    .popular-fox-popup h3 {
+    .joke-text {
         font-size: 1.2rem;
+    }
+    
+    .star {
+        font-size: 2rem;
+    }
+    
+    .top-joke {
+        flex-direction: column;
+        text-align: center;
     }
 }
 </style>
 
-<script src="/js/voting.js"></script>
+<script src="/js/jokes.js"></script>
