@@ -14,39 +14,47 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = path.join(__dirname, '../public/uploads/profiles');
     
-    // Create directory hierarchy step by step with proper permissions
+    // First check if directory exists and is writable
+    try {
+      if (fs.existsSync(uploadDir)) {
+        // Test write permissions
+        fs.accessSync(uploadDir, fs.constants.W_OK);
+        return cb(null, uploadDir);
+      }
+    } catch (error) {
+      console.log('Upload directory not writable, attempting to create...');
+    }
+    
+    // Try to create directory hierarchy
     try {
       const publicDir = path.join(__dirname, '../public');
       const uploadsBaseDir = path.join(__dirname, '../public/uploads');
       
       // Create each directory level if it doesn't exist
-      if (!fs.existsSync(publicDir)) {
-        fs.mkdirSync(publicDir, { recursive: true, mode: 0o755 });
-      }
-      if (!fs.existsSync(uploadsBaseDir)) {
-        fs.mkdirSync(uploadsBaseDir, { recursive: true, mode: 0o755 });
-      }
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
-      }
+      [publicDir, uploadsBaseDir, uploadDir].forEach(dir => {
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true, mode: 0o777 }); // More permissive mode
+        }
+      });
       
-      // Test write permissions by creating a temporary file
-      const testFile = path.join(uploadDir, 'test-write.tmp');
-      fs.writeFileSync(testFile, 'test');
-      fs.unlinkSync(testFile);
-      
+      // Test write permissions
+      fs.accessSync(uploadDir, fs.constants.W_OK);
       cb(null, uploadDir);
     } catch (error) {
-      console.error('Upload directory error:', error);
-      // Try alternative approach - create with different permissions
-      try {
-        fs.mkdirSync(uploadDir, { recursive: true });
-        fs.accessSync(uploadDir, fs.constants.W_OK);
-        cb(null, uploadDir);
-      } catch (fallbackError) {
-        console.error('Fallback directory creation failed:', fallbackError);
-        cb(new Error(`Upload directory is not accessible: ${error.message}. Please check that the application has write permissions to the uploads folder.`));
-      }
+      console.error('Upload directory creation failed:', error);
+      
+      // Provide helpful error message with instructions
+      const errorMsg = `Upload directory setup failed. Please run these commands in your terminal:
+      
+sudo mkdir -p ${uploadDir}
+sudo chmod 755 ${uploadDir}
+sudo chown -R $USER:$USER ${path.join(__dirname, '../public/uploads')}
+
+Or run: npm run setup-uploads
+
+Error details: ${error.message}`;
+      
+      cb(new Error(errorMsg));
     }
   },
   filename: function (req, file, cb) {
@@ -165,7 +173,29 @@ router.get('/', authenticateToken, requireAuth, async (req, res) => {
 });
 
 // Update profile picture
-router.post('/upload-picture', authenticateToken, requireAuth, upload.single('profilePicture'), async (req, res) => {
+router.post('/upload-picture', authenticateToken, requireAuth, (req, res, next) => {
+  // Custom error handler middleware for multer
+  upload.single('profilePicture')(req, res, function(err) {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.redirect('/profile?error=Filen er for stor (maks 5MB)');
+      }
+      return res.redirect('/profile?error=Filopplasting feilet: ' + err.message);
+    } else if (err) {
+      console.error('Upload error:', err);
+      if (err.message.includes('Upload directory setup failed')) {
+        return res.redirect('/profile?error=Opplastingsmappe ikke tilgjengelig. Kontakt administrator eller kjør setup-kommandoene fra terminal.');
+      }
+      return res.redirect('/profile?error=Kunne ikke laste opp fil: ' + err.message);
+    }
+    
+    // File uploaded successfully, continue to actual handler
+    handleProfilePictureUpload(req, res);
+  });
+});
+
+// Separate function to handle the actual profile picture logic
+async function handleProfilePictureUpload(req, res) {
   try {
     if (!req.file) {
       return res.redirect('/profile?error=Ingen fil valgt');
@@ -184,7 +214,6 @@ router.post('/upload-picture', authenticateToken, requireAuth, upload.single('pr
         }
       } catch (deleteError) {
         console.warn('Could not delete old profile picture:', deleteError.message);
-        // Continue anyway - not critical
       }
     }
 
@@ -196,7 +225,7 @@ router.post('/upload-picture', authenticateToken, requireAuth, upload.single('pr
 
     res.redirect('/profile?success=Profilbilde oppdatert!');
   } catch (error) {
-    console.error('Profile picture upload error:', error);
+    console.error('Profile picture processing error:', error);
     
     // Clean up uploaded file if it exists
     if (req.file && req.file.path) {
@@ -207,15 +236,9 @@ router.post('/upload-picture', authenticateToken, requireAuth, upload.single('pr
       }
     }
     
-    if (error.code === 'EACCES') {
-      res.redirect('/profile?error=Ingen tilgang til å lagre filer. Kontakt administrator.');
-    } else if (error.message.includes('Upload directory')) {
-      res.redirect('/profile?error=Opplastingsmappe er ikke tilgjengelig. Kontakt administrator.');
-    } else {
-      res.redirect('/profile?error=Kunne ikke laste opp profilbilde');
-    }
+    res.redirect('/profile?error=Kunne ikke behandle profilbilde');
   }
-});
+}
 
 // Change password
 router.post('/change-password', [

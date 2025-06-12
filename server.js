@@ -88,27 +88,29 @@ const uploadsDir = path.join(__dirname, 'public/uploads/profiles');
 const publicDir = path.join(__dirname, 'public');
 const uploadsBaseDir = path.join(__dirname, 'public/uploads');
 
+console.log('Checking upload directories...');
+
 try {
-  // Create directories step by step
-  if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true, mode: 0o755 });
-  }
-  if (!fs.existsSync(uploadsBaseDir)) {
-    fs.mkdirSync(uploadsBaseDir, { recursive: true, mode: 0o755 });
-  }
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true, mode: 0o755 });
-  }
+  // Create directories step by step with more permissive permissions
+  [publicDir, uploadsBaseDir, uploadsDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true, mode: 0o777 });
+      console.log(`Created directory: ${dir}`);
+    }
+  });
   
   // Test write permissions
   const testFile = path.join(uploadsDir, 'test-write-permissions.tmp');
   fs.writeFileSync(testFile, 'test');
   fs.unlinkSync(testFile);
   
-  console.log('Created uploads directory with proper permissions');
+  console.log('✅ Upload directories are ready and writable');
 } catch (error) {
-  console.error('Error creating uploads directory:', error);
-  console.error('Upload functionality may not work properly');
+  console.error('⚠️  Upload directory setup warning:', error.message);
+  console.log('📁 Profile picture uploads may not work properly');
+  console.log('🔧 Run "npm run setup-uploads" to fix this issue');
+  
+  // Don't crash the server, just warn
 }
 
 // Socket.io for real-time updates
