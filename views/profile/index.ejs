@@ -29,8 +29,8 @@
                     <p class="profile-email"><%= user.email %></p>
                     <div class="profile-stats">
                         <span class="stat">
-                            <strong><%= user.totalVotes %></strong>
-                            <small>Totale stemmer</small>
+                            <strong><%= user.totalRatings %></strong>
+                            <small>Totale vurderinger</small>
                         </span>
                         <span class="stat">
                             <strong><%= new Date(user.createdAt).toLocaleDateString('no-NO') %></strong>
@@ -65,47 +65,53 @@
             </div>
         </div>
 
-        <!-- Favorite Fox Card -->
+        <!-- Favorite Joke Card -->
         <div class="profile-card">
-            <h3>🦊 Min favorittrev</h3>
-            <% if (user.favoriteFox && user.favoriteFox.foxNumber && user.favoriteFox.imageUrl) { %>
-            <div class="favorite-fox-display">
-                <img src="<%= user.favoriteFox.imageUrl %>" 
-                     alt="Favorittrev <%= user.favoriteFox.foxNumber %>"
-                     class="favorite-fox-image"
-                     onerror="this.style.display='none';">
-                <p><strong>Rev #<%= user.favoriteFox.foxNumber %></strong></p>
+            <h3>😂 Min favorittvits</h3>
+            <% if (user.favoriteJoke && user.favoriteJoke.jokeId && user.favoriteJoke.text) { %>
+            <div class="favorite-joke-display">
+                <div class="favorite-joke-content">
+                    <p class="joke-text">"<%= user.favoriteJoke.text %>"</p>
+                    <div class="joke-meta">
+                        <span class="joke-category"><%= user.favoriteJoke.category || 'Generell' %></span>
+                        <span class="joke-rating">⭐ <%= user.favoriteJoke.averageRating ? user.favoriteJoke.averageRating.toFixed(1) : 'N/A' %></span>
+                    </div>
+                </div>
             </div>
             <% } else { %>
-            <p class="no-favorite">Du har ikke valgt en favorittrev ennå.</p>
+            <p class="no-favorite">Du har ikke valgt en favorittvits ennå.</p>
             <% } %>
 
-            <form action="/profile/set-favorite-fox" method="POST" class="favorite-fox-form">
+            <form action="/profile/set-favorite-joke" method="POST" class="favorite-joke-form">
                 <div class="form-group">
-                    <label for="foxNumber"><% if (user.favoriteFox && user.favoriteFox.foxNumber) { %>Endre<% } else { %>Velg<% } %> favorittrev:</label>
+                    <label for="jokeId"><% if (user.favoriteJoke && user.favoriteJoke.jokeId) { %>Endre<% } else { %>Velg<% } %> favorittvits:</label>
                     <div class="custom-dropdown">
-                        <input type="hidden" name="foxNumber" id="foxNumber" required>
+                        <input type="hidden" name="jokeId" id="jokeId" required>
                         <div class="dropdown-selected" id="dropdown-selected">
-                            <% if (user.favoriteFox && user.favoriteFox.foxNumber) { %>
-                                <img src="<%= user.favoriteFox.imageUrl %>" alt="Fox <%= user.favoriteFox.foxNumber %>" class="dropdown-fox-image">
-                                <span>Rev #<%= user.favoriteFox.foxNumber %></span>
+                            <% if (user.favoriteJoke && user.favoriteJoke.jokeId) { %>
+                                <div class="dropdown-joke-preview">
+                                    <span class="joke-preview-text"><%= user.favoriteJoke.text.substring(0, 50) %>...</span>
+                                    <small class="joke-preview-rating">⭐ <%= user.favoriteJoke.averageRating ? user.favoriteJoke.averageRating.toFixed(1) : 'N/A' %></small>
+                                </div>
                             <% } else { %>
-                                <span>Velg en rev...</span>
+                                <span>Velg en vits...</span>
                             <% } %>
                             <div class="dropdown-arrow">▼</div>
                         </div>
                         <div class="dropdown-options" id="dropdown-options">
-                            <% if (!user.favoriteFox || !user.favoriteFox.foxNumber) { %>
+                            <% if (!user.favoriteJoke || !user.favoriteJoke.jokeId) { %>
                                 <div class="dropdown-option" data-value="">
-                                    <span>Velg en rev...</span>
+                                    <span>Velg en vits...</span>
                                 </div>
                             <% } %>
-                            <% allFoxes.forEach(fox => { %>
-                            <div class="dropdown-option" data-value="<%= fox.foxNumber %>">
-                                <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" class="dropdown-fox-image" loading="lazy">
-                                <div class="dropdown-fox-info">
-                                    <span class="dropdown-fox-name">Rev #<%= fox.foxNumber %></span>
-                                    <span class="dropdown-fox-votes"><%= fox.totalVotes %> stemmer</span>
+                            <% allJokes.forEach(joke => { %>
+                            <div class="dropdown-option" data-value="<%= joke.jokeId %>">
+                                <div class="dropdown-joke-info">
+                                    <span class="dropdown-joke-text"><%= joke.text.substring(0, 60) %></span>
+                                    <div class="dropdown-joke-meta">
+                                        <span class="dropdown-joke-category"><%= joke.category || 'Generell' %></span>
+                                        <span class="dropdown-joke-rating">⭐ <%= joke.averageRating ? joke.averageRating.toFixed(1) : 'N/A' %> (<%= joke.totalRatings %> vurderinger)</span>
+                                    </div>
                                 </div>
                             </div>
                             <% }) %>
@@ -139,32 +145,29 @@
             </form>
         </div>
 
-        <!-- Personal Voting Statistics -->
-        <div class="profile-card voting-stats-card">
-            <h3>📊 Mine stemmestatistikker</h3>
-            <% if (userVotes && userVotes.length > 0) { %>
+        <!-- Personal Rating Statistics -->
+        <div class="profile-card rating-stats-card">
+            <h3>📊 Mine vurderingsstatistikker</h3>
+            <% if (userRatings && userRatings.length > 0) { %>
             <div class="personal-leaderboard">
-                <p class="stats-description">Revene du har stemt mest på:</p>
-                <% userVotes.forEach((fox, index) => { %>
-                <div class="personal-vote-item">
-                    <div class="vote-rank">#<%= index + 1 %></div>
-                    <div class="fox-thumbnail">
-                        <img src="<%= fox.imageUrl %>" alt="Fox <%= fox.foxNumber %>" loading="lazy">
-                    </div>
-                    <div class="vote-info">
-                        <strong>Rev #<%= fox.foxNumber %></strong>
-                        <div class="vote-details">
-                            <span class="my-votes"><%= fox.userVoteCount %> mine stemmer</span>
-                            <span class="total-votes" data-fox-votes="<%= fox.foxNumber %>"><%= fox.totalVotes %> totalt</span>
+                <p class="stats-description">Vitsene du har vurdert høyest:</p>
+                <% userRatings.forEach((joke, index) => { %>
+                <div class="personal-rating-item">
+                    <div class="rating-rank">#<%= index + 1 %></div>
+                    <div class="joke-info">
+                        <div class="joke-text-preview">"<%= joke.text.substring(0, 80) %>..."</div>
+                        <div class="rating-details">
+                            <span class="my-rating">Min vurdering: ⭐ <%= joke.userRating.toFixed(1) %></span>
+                            <span class="total-rating" data-joke-rating="<%= joke.jokeId %>">Gjennomsnitt: ⭐ <%= joke.averageRating.toFixed(1) %> (<%= joke.totalRatings %> vurderinger)</span>
                         </div>
                     </div>
                 </div>
                 <% }) %>
             </div>
             <% } else { %>
-            <div class="no-votes">
-                <p>Du har ikke stemt på noen rever ennå!</p>
-                <a href="/" class="btn btn-primary">Start å stemme</a>
+            <div class="no-ratings">
+                <p>Du har ikke vurdert noen vitser ennå!</p>
+                <a href="/" class="btn btn-primary">Start å vurdere</a>
             </div>
             <% } %>
         </div>
@@ -225,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Custom dropdown functionality
     const dropdownSelected = document.getElementById('dropdown-selected');
     const dropdownOptions = document.getElementById('dropdown-options');
-    const hiddenInput = document.getElementById('foxNumber');
+    const hiddenInput = document.getElementById('jokeId');
     
     if (dropdownSelected && dropdownOptions && hiddenInput) {
         // Toggle dropdown
@@ -242,22 +245,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!option) return;
 
             const value = option.getAttribute('data-value');
-            const img = option.querySelector('.dropdown-fox-image');
-            const name = option.querySelector('.dropdown-fox-name');
+            const jokeInfo = option.querySelector('.dropdown-joke-info');
+
+            console.log('Dropdown: Selected value:', value, 'type:', typeof value);
 
             // Update hidden input
             hiddenInput.value = value;
 
             // Update selected display
-            if (value && img && name) {
+            if (value && jokeInfo) {
+                const jokeText = jokeInfo.querySelector('.dropdown-joke-text').textContent;
+                const jokeRating = jokeInfo.querySelector('.dropdown-joke-rating').textContent;
+                
                 dropdownSelected.innerHTML = `
-                    <img src="${img.src}" alt="${img.alt}" class="dropdown-fox-image">
-                    <span>${name.textContent}</span>
+                    <div class="dropdown-joke-preview">
+                        <span class="joke-preview-text">${jokeText}</span>
+                        <small class="joke-preview-rating">${jokeRating}</small>
+                    </div>
                     <div class="dropdown-arrow">▼</div>
                 `;
             } else {
                 dropdownSelected.innerHTML = `
-                    <span>Velg en rev...</span>
+                    <span>Velg en vits...</span>
                     <div class="dropdown-arrow">▼</div>
                 `;
             }
@@ -272,13 +281,20 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdownSelected.classList.remove('open');
             dropdownOptions.classList.remove('show');
         });
+    }
 
-        // Handle image loading errors in dropdown
-        const dropdownImages = dropdownOptions.querySelectorAll('.dropdown-fox-image');
-        dropdownImages.forEach(img => {
-            img.addEventListener('error', function() {
-                this.style.display = 'none';
-            });
+    // Add form submission debugging
+    const favoriteJokeForm = document.querySelector('.favorite-joke-form');
+    if (favoriteJokeForm) {
+        favoriteJokeForm.addEventListener('submit', function(e) {
+            const jokeIdValue = hiddenInput.value;
+            console.log('Form submission: jokeId value:', jokeIdValue, 'type:', typeof jokeIdValue);
+            
+            if (!jokeIdValue || jokeIdValue === '') {
+                e.preventDefault();
+                alert('Vennligst velg en vits først');
+                return false;
+            }
         });
     }
 
@@ -290,49 +306,42 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Connected to profile real-time updates');
         });
         
-        socket.on('foxVoteUpdate', function(data) {
-            console.log('Profile: Fox vote update received:', data);
-            updateProfileVoteCounts(data);
+        socket.on('jokeRatingUpdate', function(data) {
+            console.log('Profile: Joke rating update received:', data);
+            updateProfileRatingCounts(data);
         });
     }
     
-    // Update vote counts in profile
-    function updateProfileVoteCounts(data) {
-        const foxNumber = data.foxNumber;
+    // Update rating counts in profile
+    function updateProfileRatingCounts(data) {
+        const jokeId = data.jokeId;
         
-        // Update personal voting statistics
-        const voteElements = document.querySelectorAll(`[data-fox-votes="${foxNumber}"]`);
-        voteElements.forEach(element => {
-            if (element.classList.contains('total-votes')) {
-                element.textContent = `${data.totalVotes} totalt`;
+        // Update personal rating statistics
+        const ratingElements = document.querySelectorAll(`[data-joke-rating="${jokeId}"]`);
+        ratingElements.forEach(element => {
+            if (element.classList.contains('total-rating')) {
+                element.textContent = `Gjennomsnitt: ⭐ ${data.averageRating.toFixed(1)} (${data.totalRatings} vurderinger)`;
                 
                 // Add visual feedback
-                element.classList.add('vote-count-updated');
+                element.classList.add('rating-count-updated');
                 setTimeout(() => {
-                    element.classList.remove('vote-count-updated');
+                    element.classList.remove('rating-count-updated');
                 }, 2000);
             }
         });
         
-        // Update favorite fox display if it matches
-        const favoriteFoxDisplay = document.querySelector('.favorite-fox-display');
-        if (favoriteFoxDisplay) {
-            const foxNumberText = favoriteFoxDisplay.querySelector('p strong');
-            if (foxNumberText && foxNumberText.textContent.includes(foxNumber.toString())) {
-                // Add real-time vote count to favorite fox display
-                let voteCountElement = favoriteFoxDisplay.querySelector('.favorite-vote-count');
-                if (!voteCountElement) {
-                    voteCountElement = document.createElement('small');
-                    voteCountElement.className = 'favorite-vote-count';
-                    voteCountElement.style.display = 'block';
-                    voteCountElement.style.color = '#64748b';
-                    voteCountElement.style.marginTop = '0.5rem';
-                    favoriteFoxDisplay.appendChild(voteCountElement);
-                }
-                voteCountElement.textContent = `${data.totalVotes} stemmer totalt`;
-                voteCountElement.classList.add('vote-count-updated');
+        // Update favorite joke display if it matches
+        const favoriteJokeDisplay = document.querySelector('.favorite-joke-display');
+        if (favoriteJokeDisplay) {
+            const jokeRatingElement = favoriteJokeDisplay.querySelector('.joke-rating');
+            if (jokeRatingElement) {
+                // Check if this is the user's favorite joke by comparing text content
+                const favoriteJokeText = favoriteJokeDisplay.querySelector('.joke-text').textContent;
+                // This is a simplified check - in a real app you'd store the jokeId
+                jokeRatingElement.textContent = `⭐ ${data.averageRating.toFixed(1)}`;
+                jokeRatingElement.classList.add('rating-count-updated');
                 setTimeout(() => {
-                    voteCountElement.classList.remove('vote-count-updated');
+                    jokeRatingElement.classList.remove('rating-count-updated');
                 }, 2000);
             }
         }

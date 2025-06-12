@@ -33,11 +33,19 @@ const userSchema = new mongoose.Schema({
   },
   favoriteJoke: {
     jokeId: {
-      type: String,
+      type: mongoose.Schema.Types.Mixed, // Allow both Number and String
       default: null
     },
     text: {
       type: String,
+      default: null
+    },
+    category: {
+      type: String,
+      default: null
+    },
+    averageRating: {
+      type: Number,
       default: null
     }
   },

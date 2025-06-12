@@ -69,11 +69,17 @@ body::before {
     font-size: 1.75rem;
     font-weight: 700;
     text-decoration: none;
-    background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     letter-spacing: -0.02em;
+}
+
+.emoji-reset {
+    -webkit-text-fill-color: initial !important;
+    background: none !important;
+    color: initial !important;
 }
 
 .nav-links {
@@ -84,7 +90,7 @@ body::before {
 
 .nav-links a {
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.9);
+    color: #1a202c;
     padding: 0.5rem 1rem;
     border-radius: var(--border-radius-small);
     transition: var(--transition);
@@ -93,13 +99,13 @@ body::before {
 }
 
 .nav-links a:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    background: rgba(0, 0, 0, 0.1);
+    color: #2d3748;
     transform: translateY(-1px);
 }
 
 .user-info {
-    color: rgba(255, 255, 255, 0.9);
+    color: #1a202c;
     font-weight: 500;
     padding: 0.5rem;
 }
@@ -158,6 +164,15 @@ body::before {
 .btn-outline:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
+}
+
+/* Logout button specific styling */
+form[action="/auth/logout"] .btn-outline {
+    color: #1a202c;
+}
+
+form[action="/auth/logout"] .btn-outline:hover {
+    color: #1a202c;
 }
 
 .btn-full {
@@ -1409,4 +1424,9 @@ body::before {
 @keyframes fadeOut {
     0% { opacity: 1; }
     100% { opacity: 0; }
+}
+
+/* Fix emoji colors in white text areas */
+.emoji-color {
+    color: initial !important;
 }

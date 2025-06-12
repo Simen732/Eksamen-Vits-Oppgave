@@ -32,7 +32,7 @@ const jokeSchema = new mongoose.Schema({
     default: 'general'
   },
   jokeId: {
-    type: String,
+    type: mongoose.Schema.Types.Mixed, // Allow both String and Number
     required: true,
     unique: true
   },

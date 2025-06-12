@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-const Fox = require('../models/Fox');
+const Joke = require('../models/Joke');
 const { authenticateToken, requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -56,56 +56,77 @@ router.get('/', authenticateToken, requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
     
-    // Get user's voting statistics
-    const userVotes = await Fox.aggregate([
+    // If user has a favorite joke, ensure it has the latest data
+    if (user.favoriteJoke && user.favoriteJoke.jokeId) {
+      const currentJoke = await Joke.findOne({ jokeId: user.favoriteJoke.jokeId });
+      if (currentJoke) {
+        // Update favorite joke with current data
+        user.favoriteJoke.averageRating = currentJoke.averageRating;
+        user.favoriteJoke.category = currentJoke.category;
+      }
+    }
+
+    // Get user's rating statistics
+    const userRatings = await Joke.aggregate([
       {
         $match: {
-          'votes.userId': req.user._id
+          'ratings.userId': req.user._id
         }
       },
       {
         $addFields: {
-          userVoteCount: {
-            $size: {
-              $filter: {
-                input: '$votes',
-                cond: { $eq: ['$$this.userId', req.user._id] }
-              }
-            }
+          userRating: {
+            $arrayElemAt: [
+              {
+                $map: {
+                  input: {
+                    $filter: {
+                      input: '$ratings',
+                      cond: { $eq: ['$$this.userId', req.user._id] }
+                    }
+                  },
+                  as: 'rating',
+                  in: '$$rating.rating'
+                }
+              },
+              0
+            ]
           }
         }
       },
       {
         $match: {
-          userVoteCount: { $gt: 0 }
+          userRating: { $exists: true }
         }
       },
       {
-        $sort: { userVoteCount: -1 }
+        $sort: { userRating: -1, averageRating: -1 }
       },
       {
         $limit: 10
       },
       {
         $project: {
-          foxNumber: 1,
-          imageUrl: 1,
-          totalVotes: 1,
-          userVoteCount: 1
+          jokeId: 1,
+          text: 1,
+          category: 1,
+          averageRating: 1,
+          totalRatings: 1,
+          userRating: 1
         }
       }
     ]);
 
-    // Get all foxes for favorite selection
-    const allFoxes = await Fox.find({ totalVotes: { $gt: 0 } })
-      .sort({ totalVotes: -1 })
+    // Get all jokes for favorite selection (top rated jokes)
+    const allJokes = await Joke.find({ totalRatings: { $gt: 0 } })
+      .sort({ averageRating: -1, totalRatings: -1 })
       .limit(50)
-      .select('foxNumber imageUrl totalVotes');
+      .select('jokeId text category averageRating totalRatings');
 
     res.render('profile/index', {
       user,
-      userVotes,
-      allFoxes,
+      userRatings,
+      allJokes,
       error: null,
       success: null
     });
@@ -113,8 +134,8 @@ router.get('/', authenticateToken, requireAuth, async (req, res) => {
     console.error('Profile error:', error);
     res.render('profile/index', {
       user: req.user,
-      userVotes: [],
-      allFoxes: [],
+      userRatings: [],
+      allJokes: [],
       error: 'Kunne ikke laste profil',
       success: null
     });
@@ -214,27 +235,47 @@ router.post('/change-password', [
   }
 });
 
-// Set favorite fox
-router.post('/set-favorite-fox', authenticateToken, requireAuth, async (req, res) => {
-  const { foxNumber } = req.body;
+// Set favorite joke
+router.post('/set-favorite-joke', authenticateToken, requireAuth, async (req, res) => {
+  const { jokeId } = req.body;
 
   try {
-    const fox = await Fox.findOne({ foxNumber: parseInt(foxNumber) });
-    if (!fox) {
-      return res.redirect('/profile?error=Rev ikke funnet');
+    console.log('Setting favorite joke - received jokeId:', jokeId, 'type:', typeof jokeId);
+    
+    if (!jokeId || jokeId === '') {
+      return res.redirect('/profile?error=Ingen vits valgt');
     }
 
-    await User.findByIdAndUpdate(req.user._id, {
-      favoriteFox: {
-        foxNumber: fox.foxNumber,
-        imageUrl: fox.imageUrl
-      }
-    });
+    // Handle both string and numeric joke IDs
+    let joke = await Joke.findOne({ jokeId: jokeId });
+    
+    console.log('Found joke:', joke ? `${joke.jokeId}: ${joke.text.substring(0, 50)}...` : 'null');
 
-    res.redirect('/profile?success=Favorittrev satt!');
+    if (!joke) {
+      // Debug: Get all jokes to see what's available
+      const allJokes = await Joke.find({}).select('jokeId text').limit(5);
+      console.log('Available jokes for debugging:', allJokes.map(j => ({ id: j.jokeId, type: typeof j.jokeId })));
+      return res.redirect('/profile?error=Vits ikke funnet');
+    }
+
+    const updateData = {
+      favoriteJoke: {
+        jokeId: joke.jokeId, // Keep original type
+        text: joke.text,
+        category: joke.category || 'Generell',
+        averageRating: joke.averageRating || 0
+      }
+    };
+
+    console.log('Updating user favorite joke with:', updateData);
+
+    await User.findByIdAndUpdate(req.user._id, updateData);
+
+    console.log('Favorite joke updated successfully');
+    res.redirect('/profile?success=Favorittvits satt!');
   } catch (error) {
-    console.error('Set favorite fox error:', error);
-    res.redirect('/profile?error=Kunne ikke sette favorittrev');
+    console.error('Set favorite joke error:', error);
+    res.redirect('/profile?error=Kunne ikke sette favorittvits');
   }
 });
 
