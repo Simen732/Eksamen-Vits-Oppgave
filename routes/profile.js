@@ -14,17 +14,39 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = path.join(__dirname, '../public/uploads/profiles');
     
-    // Create directory with proper permissions if it doesn't exist
+    // Create directory hierarchy step by step with proper permissions
     try {
+      const publicDir = path.join(__dirname, '../public');
+      const uploadsBaseDir = path.join(__dirname, '../public/uploads');
+      
+      // Create each directory level if it doesn't exist
+      if (!fs.existsSync(publicDir)) {
+        fs.mkdirSync(publicDir, { recursive: true, mode: 0o755 });
+      }
+      if (!fs.existsSync(uploadsBaseDir)) {
+        fs.mkdirSync(uploadsBaseDir, { recursive: true, mode: 0o755 });
+      }
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true, mode: 0o755 });
       }
-      // Check if directory is writable
-      fs.accessSync(uploadDir, fs.constants.W_OK);
+      
+      // Test write permissions by creating a temporary file
+      const testFile = path.join(uploadDir, 'test-write.tmp');
+      fs.writeFileSync(testFile, 'test');
+      fs.unlinkSync(testFile);
+      
       cb(null, uploadDir);
     } catch (error) {
       console.error('Upload directory error:', error);
-      cb(new Error('Upload directory is not accessible. Please check permissions.'));
+      // Try alternative approach - create with different permissions
+      try {
+        fs.mkdirSync(uploadDir, { recursive: true });
+        fs.accessSync(uploadDir, fs.constants.W_OK);
+        cb(null, uploadDir);
+      } catch (fallbackError) {
+        console.error('Fallback directory creation failed:', fallbackError);
+        cb(new Error(`Upload directory is not accessible: ${error.message}. Please check that the application has write permissions to the uploads folder.`));
+      }
     }
   },
   filename: function (req, file, cb) {

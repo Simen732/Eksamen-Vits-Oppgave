@@ -83,15 +83,32 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/foxvoting
   useUnifiedTopology: true
 });
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists with proper permissions
 const uploadsDir = path.join(__dirname, 'public/uploads/profiles');
+const publicDir = path.join(__dirname, 'public');
+const uploadsBaseDir = path.join(__dirname, 'public/uploads');
+
 try {
+  // Create directories step by step
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true, mode: 0o755 });
+  }
+  if (!fs.existsSync(uploadsBaseDir)) {
+    fs.mkdirSync(uploadsBaseDir, { recursive: true, mode: 0o755 });
+  }
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true, mode: 0o755 });
-    console.log('Created uploads directory');
   }
+  
+  // Test write permissions
+  const testFile = path.join(uploadsDir, 'test-write-permissions.tmp');
+  fs.writeFileSync(testFile, 'test');
+  fs.unlinkSync(testFile);
+  
+  console.log('Created uploads directory with proper permissions');
 } catch (error) {
-  console.warn('Could not create uploads directory:', error.message);
+  console.error('Error creating uploads directory:', error);
+  console.error('Upload functionality may not work properly');
 }
 
 // Socket.io for real-time updates
