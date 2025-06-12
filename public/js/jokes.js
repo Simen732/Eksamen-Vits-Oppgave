@@ -7,6 +7,27 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRandomJoke();
     setupStarRating();
     setupButtons();
+    
+    // Socket.io for real-time updates - use global socket variable
+    if (typeof socket !== 'undefined' && socket) {
+        socket.on('ratingUpdate', function(data) {
+            console.log('Rating update received:', data);
+            // Could update UI if the same joke is being displayed
+            if (currentJoke && data.jokeId === currentJoke.id) {
+                // Update the current joke's rating display
+                updateCurrentJokeRating(data);
+            }
+        });
+        
+        socket.on('jokeRatingUpdate', function(data) {
+            console.log('Joke rating update received:', data);
+            if (currentJoke && data.jokeId === currentJoke.id) {
+                updateCurrentJokeRating(data);
+            }
+        });
+    } else {
+        console.log('Socket.IO not available - real-time updates disabled');
+    }
 });
 
 // Load a random joke
@@ -217,10 +238,10 @@ function showToast(message, type = 'info') {
     }, 4000);
 }
 
-// Socket.io for real-time updates
-if (typeof socket !== 'undefined') {
-    socket.on('ratingUpdate', function(data) {
-        console.log('Rating update received:', data);
-        // Could update UI if the same joke is being displayed
-    });
+// Update current joke rating display
+function updateCurrentJokeRating(data) {
+    const ratingDisplay = document.querySelector('.joke-current-rating');
+    if (ratingDisplay && data.averageRating && data.totalRatings) {
+        ratingDisplay.innerHTML = `Current rating: ⭐ ${data.averageRating} (${data.totalRatings} ratings)`;
+    }
 }

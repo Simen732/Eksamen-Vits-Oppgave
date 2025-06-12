@@ -1,17 +1,14 @@
 // Main JavaScript file for Fox Voting App
 
-// Initialize Socket.IO connection
-let socket;
-if (typeof io !== 'undefined') {
-    socket = io();
-    
-    socket.on('connect', function() {
-        console.log('Connected to server');
-    });
-    
+// Socket.IO is initialized in layout.ejs - just use the global socket variable
+if (typeof socket !== 'undefined' && socket) {
     socket.on('voteUpdate', function(data) {
         console.log('Vote update received:', data);
-        // Update UI if needed
+        updateTrendingSection();
+    });
+    
+    socket.on('ratingUpdate', function(data) {
+        console.log('Rating update received:', data);
         updateTrendingSection();
     });
 }

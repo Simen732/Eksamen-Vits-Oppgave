@@ -37,7 +37,6 @@ c:\Skole\Eksamen\Eksamen_2025\
 - Les tilfeldige vitser fra databasen
 - Gi karakterer fra 1-5 stjerner
 - Se gjennomsnittsvurderinger og totalt antall stemmer
-- Kategorisering av vitser
 - Sanntidsoppdateringer av vurderinger
 
 ### Brukerautentisering
@@ -207,4 +206,4 @@ Dette prosjektet er en eksamenoppgave. Kontakt prosjekteier for lisensdetaljer.
 
 ---
 
-Utviklet som del av et webapplikasjonskurs 🎓
+Utviklet som del av et webapplikasjonsoppgave 🎓

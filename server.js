@@ -96,10 +96,14 @@ try {
 
 // Socket.io for real-time updates
 io.on('connection', (socket) => {
-  console.log('User connected');
+  console.log('User connected:', socket.id);
   
   socket.on('disconnect', () => {
-    console.log('User disconnected');
+    console.log('User disconnected:', socket.id);
+  });
+  
+  socket.on('error', (error) => {
+    console.log('Socket error:', error);
   });
 });
 
@@ -144,6 +148,7 @@ app.get('/', authenticateToken, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Socket.IO server ready on port ${PORT}`);
 });
