@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRandomJoke();
     setupStarRating();
     setupButtons();
+    initializeJokePopup();
     
     // Socket.io for real-time updates - use global socket variable
     if (typeof socket !== 'undefined' && socket) {
@@ -243,6 +244,81 @@ function showToast(message, type = 'info') {
     }, 4000);
 }
 
+// Initialize joke popup functionality
+function initializeJokePopup() {
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.joke-clickable')) {
+            const jokeElement = e.target.closest('.joke-clickable');
+            const jokeData = {
+                id: jokeElement.getAttribute('data-joke-id'),
+                text: jokeElement.getAttribute('data-joke-text'),
+                category: jokeElement.getAttribute('data-joke-category'),
+                rating: jokeElement.getAttribute('data-joke-rating'),
+                totalRatings: jokeElement.getAttribute('data-joke-total')
+            };
+            
+            // Get the rank from the joke element
+            const rankElement = jokeElement.querySelector('.joke-rank');
+            const rank = rankElement ? rankElement.textContent : '#?';
+            
+            showJokePopup(jokeData, rank);
+        }
+    });
+    
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeJokePopup();
+        }
+    });
+    
+    // Prevent popup content clicks from closing the popup
+    const jokePopup = document.getElementById('joke-popup');
+    if (jokePopup) {
+        const popupContent = jokePopup.querySelector('.popup-content');
+        if (popupContent) {
+            popupContent.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+    }
+}
+
+// Show joke popup
+function showJokePopup(jokeData, rank) {
+    const popup = document.getElementById('joke-popup');
+    const popupRank = document.getElementById('popup-joke-rank');
+    const popupText = document.getElementById('popup-joke-text');
+    const popupCategory = document.getElementById('popup-joke-category');
+    const popupRating = document.getElementById('popup-rating');
+    const popupTotalRatings = document.getElementById('popup-total-ratings');
+    
+    if (popup && popupText && popupCategory && popupRating && popupTotalRatings) {
+        popupRank.textContent = rank;
+        popupText.textContent = jokeData.text;
+        popupCategory.textContent = jokeData.category || 'General';
+        popupRating.textContent = `⭐ ${jokeData.rating}`;
+        popupTotalRatings.textContent = `(${jokeData.totalRatings} ratings)`;
+        
+        popup.classList.add('show');
+        document.body.classList.add('popup-open');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+// Close joke popup
+function closeJokePopup() {
+    const popup = document.getElementById('joke-popup');
+    if (popup) {
+        popup.classList.remove('show');
+        document.body.classList.remove('popup-open');
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+}
+
+// Make closeJokePopup globally available for onclick handlers
+window.closeJokePopup = closeJokePopup;
+
 // Update top jokes section in real-time
 async function updateTopJokesSection(updateData) {
     const topJokesSection = document.querySelector('.top-jokes-section');
@@ -261,7 +337,12 @@ async function updateTopJokesSection(updateData) {
         const jokesGrid = topJokesSection.querySelector('.jokes-grid');
         if (jokesGrid && topJokes.length > 0) {
             jokesGrid.innerHTML = topJokes.map((joke, index) => `
-                <div class="top-joke ${joke.jokeId === updateData.jokeId ? 'updated' : ''}" data-joke-id="${joke.jokeId}">
+                <div class="top-joke joke-clickable ${joke.jokeId === updateData.jokeId ? 'updated' : ''}" 
+                     data-joke-id="${joke.jokeId}" 
+                     data-joke-text="${joke.text}" 
+                     data-joke-category="${joke.category}" 
+                     data-joke-rating="${joke.averageRating}" 
+                     data-joke-total="${joke.totalRatings}">
                     <div class="joke-rank">#${index + 1}</div>
                     <div class="joke-text">${joke.text}</div>
                     <div class="joke-stats">

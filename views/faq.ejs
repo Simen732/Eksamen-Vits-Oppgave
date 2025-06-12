@@ -85,7 +85,7 @@
 </div>
 
 <!-- Popup Modal -->
-<div id="popup" class="popup-overlay">
+<div id="popup" class="popup-overlay" style="display: none;">
     <div class="popup-content">
         <p>Så fint, tar deg tilbake til hovedsiden nå! <span class="emoji-reset">😂</span></p>
     </div>
@@ -244,6 +244,10 @@
     z-index: 1000;
 }
 
+.popup-overlay.show {
+    display: flex !important;
+}
+
 .popup-content {
     background: white;
     padding: 30px 40px;
@@ -251,6 +255,8 @@
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     animation: popupAppear 0.3s ease;
+    max-width: 90%;
+    max-height: 90%;
 }
 
 .popup-content p {
@@ -333,6 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click event to yes button
     yesBtn.addEventListener('click', function() {
         popup.style.display = 'flex';
+        popup.classList.add('show');
         
         setTimeout(function() {
             window.location.href = '/';

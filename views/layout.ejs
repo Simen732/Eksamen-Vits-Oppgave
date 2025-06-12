@@ -35,6 +35,25 @@
         <%- body %>
     </main>
 
+    <!-- Joke Popup Modal - Always available -->
+    <div id="joke-popup" class="joke-popup">
+        <div class="popup-overlay"></div>
+        <div class="popup-content">
+            <button class="popup-close">&times;</button>
+            <div class="popup-joke-content">
+                <div class="popup-joke-rank" id="popup-joke-rank">#1</div>
+                <div class="popup-joke-text" id="popup-joke-text"></div>
+                <div class="popup-joke-category" id="popup-joke-category"></div>
+                <div class="popup-joke-stats">
+                    <span class="popup-rating" id="popup-rating">⭐ 0.0</span>
+                    <span class="popup-total-ratings" id="popup-total-ratings">(0 ratings)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
     <!-- Scripts - moved before closing body tag -->
     <script src="/socket.io/socket.io.js"></script>
     <script>

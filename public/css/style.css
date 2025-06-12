@@ -1430,3 +1430,205 @@ form[action="/auth/logout"] .btn-outline:hover {
 .emoji-color {
     color: initial !important;
 }
+
+/* Make top jokes clickable */
+.joke-clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.joke-clickable:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+/* Joke Popup Modal */
+.joke-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.joke-popup.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.joke-popup .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+}
+
+.joke-popup .popup-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    padding: 3rem;
+    box-shadow: var(--shadow-heavy);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2001;
+    overflow-y: auto;
+}
+
+.joke-popup.show .popup-content {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.joke-popup .popup-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    color: #667eea;
+    font-size: 32px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    z-index: 2002;
+    font-weight: 300;
+}
+
+.joke-popup .popup-close:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.1);
+    color: #5a67d8;
+}
+
+.popup-joke-content {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.popup-joke-rank {
+    display: inline-block;
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-light);
+}
+
+.popup-joke-text {
+    font-size: 1.8rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 0 1rem;
+}
+
+.popup-joke-category {
+    display: inline-block;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    margin-bottom: 2rem;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.popup-joke-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: var(--border-radius-small);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.popup-rating {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.popup-total-ratings {
+    font-size: 1.1rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Blur effect for background when popup is shown */
+body.popup-open .main-content {
+    filter: blur(8px);
+    transition: filter 0.3s ease;
+}
+
+body.popup-open .navbar {
+    filter: blur(4px);
+    transition: filter 0.3s ease;
+}
+
+/* Mobile responsive popup */
+@media (max-width: 768px) {
+    .joke-popup .popup-content {
+        width: 95%;
+        max-width: calc(100vw - 2rem);
+        padding: 2rem;
+        max-height: 85vh;
+    }
+    
+    .popup-joke-text {
+        font-size: 1.4rem;
+        padding: 0 0.5rem;
+    }
+    
+    .popup-joke-stats {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .joke-popup .popup-close {
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+    }
+    
+    .popup-joke-rank {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+}

@@ -22,7 +22,7 @@
         <h2>🏆 Top Rated Jokes 🏆</h2>
         <div class="jokes-grid">
             <% topJokes.forEach((joke, index) => { %>
-            <div class="top-joke" data-joke-id="<%= joke.jokeId %>">
+            <div class="top-joke joke-clickable" data-joke-id="<%= joke.jokeId %>" data-joke-text="<%= joke.text %>" data-joke-category="<%= joke.category %>" data-joke-rating="<%= joke.averageRating %>" data-joke-total="<%= joke.totalRatings %>">
                 <div class="joke-rank">#<%= index + 1 %></div>
                 <div class="joke-text"><%= joke.text %></div>
                 <div class="joke-stats">
@@ -244,3 +244,36 @@
 </style>
 
 <script src="/js/jokes.js"></script>
+<script>
+// Initialize joke popup functionality immediately when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeJokeClickHandlers();
+});
+
+function initializeJokeClickHandlers() {
+    document.addEventListener('click', function(e) {
+        const jokeElement = e.target.closest('.joke-clickable');
+        if (jokeElement) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const jokeData = {
+                id: jokeElement.getAttribute('data-joke-id'),
+                text: jokeElement.getAttribute('data-joke-text'),
+                category: jokeElement.getAttribute('data-joke-category'),
+                rating: jokeElement.getAttribute('data-joke-rating'),
+                totalRatings: jokeElement.getAttribute('data-joke-total')
+            };
+            
+            // Get the rank from the joke element
+            const rankElement = jokeElement.querySelector('.joke-rank');
+            const rank = rankElement ? rankElement.textContent : '#?';
+            
+            // Use the global function from main.js
+            if (typeof window.showJokePopup === 'function') {
+                window.showJokePopup(jokeData, rank);
+            }
+        }
+    });
+}
+</script>

@@ -39,7 +39,12 @@ async function updateMainPageTopJokes(updateData) {
             
             setTimeout(() => {
                 jokesGrid.innerHTML = topJokes.map((joke, index) => `
-                    <div class="top-joke ${joke.jokeId === updateData.jokeId ? 'updated' : ''}" data-joke-id="${joke.jokeId}">
+                    <div class="top-joke joke-clickable ${joke.jokeId === updateData.jokeId ? 'updated' : ''}" 
+                         data-joke-id="${joke.jokeId}" 
+                         data-joke-text="${joke.text}" 
+                         data-joke-category="${joke.category}" 
+                         data-joke-rating="${joke.averageRating}" 
+                         data-joke-total="${joke.totalRatings}">
                         <div class="joke-rank">#${index + 1}</div>
                         <div class="joke-text">${joke.text}</div>
                         <div class="joke-stats">
@@ -50,6 +55,11 @@ async function updateMainPageTopJokes(updateData) {
                 `).join('');
                 
                 jokesGrid.classList.remove('updating');
+                
+                // Re-initialize click handlers for new content
+                if (typeof initializeJokeClickHandlers === 'function') {
+                    initializeJokeClickHandlers();
+                }
                 
                 // Highlight updated joke
                 const updatedJoke = jokesGrid.querySelector(`[data-joke-id="${updateData.jokeId}"]`);
@@ -65,6 +75,115 @@ async function updateMainPageTopJokes(updateData) {
         console.error('Error updating main page top jokes:', error);
     }
 }
+
+// Global popup functions - ensure they're always available
+window.showJokePopup = function(jokeData, rank) {
+    const popup = document.getElementById('joke-popup');
+    const popupRank = document.getElementById('popup-joke-rank');
+    const popupText = document.getElementById('popup-joke-text');  
+    const popupCategory = document.getElementById('popup-joke-category');
+    const popupRating = document.getElementById('popup-rating');
+    const popupTotalRatings = document.getElementById('popup-total-ratings');
+    
+    if (popup && popupText && popupCategory && popupRating && popupTotalRatings) {
+        popupRank.textContent = rank;
+        popupText.textContent = jokeData.text;
+        popupCategory.textContent = jokeData.category || 'General';
+        popupRating.textContent = `⭐ ${jokeData.rating}`;
+        popupTotalRatings.textContent = `(${jokeData.totalRatings} ratings)`;
+        
+        popup.classList.add('show');
+        document.body.classList.add('popup-open');
+        document.body.style.overflow = 'hidden';
+    }
+};
+
+window.closeJokePopup = function() {
+    const popup = document.getElementById('joke-popup');
+    if (popup) {
+        popup.classList.remove('show');
+        document.body.classList.remove('popup-open');
+        document.body.style.overflow = '';
+    }
+};
+
+// Initialize joke click handlers
+document.addEventListener('DOMContentLoaded', function() {
+    initializeJokeClickHandlers();
+    initializePopupCloseHandlers();
+    
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            window.closeJokePopup();
+        }
+    });
+});
+
+function initializePopupCloseHandlers() {
+    // Initialize close button functionality
+    const popup = document.getElementById('joke-popup');
+    if (popup) {
+        const closeBtn = popup.querySelector('.popup-close');
+        const overlay = popup.querySelector('.popup-overlay');
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.closeJokePopup();
+            });
+        }
+        
+        if (overlay) {
+            overlay.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.closeJokePopup();
+            });
+        }
+        
+        // Prevent popup content clicks from closing
+        const popupContent = popup.querySelector('.popup-content');
+        if (popupContent) {
+            popupContent.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+    }
+}
+
+function initializeJokeClickHandlers() {
+    // Remove any existing listeners to prevent duplicates
+    document.removeEventListener('click', handleJokeClick);
+    document.addEventListener('click', handleJokeClick);
+}
+
+function handleJokeClick(e) {
+    const jokeElement = e.target.closest('.joke-clickable');
+    if (jokeElement) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const jokeData = {
+            id: jokeElement.getAttribute('data-joke-id'),
+            text: jokeElement.getAttribute('data-joke-text'),
+            category: jokeElement.getAttribute('data-joke-category'), 
+            rating: jokeElement.getAttribute('data-joke-rating'),
+            totalRatings: jokeElement.getAttribute('data-joke-total')
+        };
+        
+        // Get the rank from the joke element
+        const rankElement = jokeElement.querySelector('.joke-rank');
+        const rank = rankElement ? rankElement.textContent : '#?';
+        
+        window.showJokePopup(jokeData, rank);
+    }
+}
+
+// Make function globally available
+window.initializeJokeClickHandlers = initializeJokeClickHandlers;
+window.initializePopupCloseHandlers = initializePopupCloseHandlers;
 
 // Utility functions
 function showToast(message, type = 'info') {
