@@ -139,32 +139,49 @@
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    transition: all 0.3s ease;
 }
 
-.joke-rank {
-    background: var(--primary-color);
-    color: white;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.top-joke.updated {
+    background: linear-gradient(135deg, var(--card-background), #fff3cd);
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+}
+
+.top-joke.rating-updated {
+    animation: ratingPulse 2s ease-in-out;
+    border: 2px solid var(--primary-color);
+}
+
+.joke-current-rating.rating-count-updated {
+    animation: ratingPulse 1.5s ease-in-out;
+    color: var(--primary-color);
     font-weight: bold;
-    flex-shrink: 0;
 }
 
-.top-joke .joke-text {
-    flex: 1;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-.joke-stats {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+@keyframes ratingPulse {
+    0% { 
+        background-color: var(--card-background);
+        transform: scale(1);
+    }
+    50% { 
+        background-color: #e8f5e8;
+        transform: scale(1.02);
+    }
+    100% { 
+        background-color: var(--card-background);
+        transform: scale(1);
+    }
+}
+
+.top-joke:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .loading {
@@ -186,9 +203,24 @@
     animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Loading animation for top jokes updates */
+.jokes-grid.updating {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.jokes-grid.updating::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--primary-color);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 @media (max-width: 768px) {

@@ -25,6 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateCurrentJokeRating(data);
             }
         });
+        
+        socket.on('topJokesUpdate', function(data) {
+            console.log('Top jokes update received:', data);
+            updateTopJokesSection(data);
+        });
     } else {
         console.log('Socket.IO not available - real-time updates disabled');
     }
@@ -238,10 +243,63 @@ function showToast(message, type = 'info') {
     }, 4000);
 }
 
-// Update current joke rating display
+// Update top jokes section in real-time
+async function updateTopJokesSection(updateData) {
+    const topJokesSection = document.querySelector('.top-jokes-section');
+    if (!topJokesSection) return;
+    
+    try {
+        console.log('Updating top jokes section...');
+        
+        // Fetch current top jokes
+        const response = await fetch('/joke/current-top');
+        if (!response.ok) throw new Error('Failed to fetch top jokes');
+        
+        const topJokes = await response.json();
+        
+        // Update the jokes grid
+        const jokesGrid = topJokesSection.querySelector('.jokes-grid');
+        if (jokesGrid && topJokes.length > 0) {
+            jokesGrid.innerHTML = topJokes.map((joke, index) => `
+                <div class="top-joke ${joke.jokeId === updateData.jokeId ? 'updated' : ''}" data-joke-id="${joke.jokeId}">
+                    <div class="joke-rank">#${index + 1}</div>
+                    <div class="joke-text">${joke.text}</div>
+                    <div class="joke-stats">
+                        <span class="rating">⭐ ${joke.averageRating}</span>
+                        <span class="total-ratings">(${joke.totalRatings} ratings)</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Show visual feedback for the updated joke
+            const updatedJoke = jokesGrid.querySelector(`[data-joke-id="${updateData.jokeId}"]`);
+            if (updatedJoke) {
+                updatedJoke.classList.add('rating-updated');
+                setTimeout(() => {
+                    updatedJoke.classList.remove('rating-updated', 'updated');
+                }, 3000);
+            }
+            
+            // Show toast notification for significant changes
+            if (updateData.totalRatings % 5 === 0 && updateData.totalRatings > 0) {
+                showToast(`🎉 A joke just reached ${updateData.totalRatings} ratings! Check the top jokes.`, 'info');
+            }
+        }
+    } catch (error) {
+        console.error('Error updating top jokes section:', error);
+    }
+}
+
+// Update current joke rating display with animation
 function updateCurrentJokeRating(data) {
     const ratingDisplay = document.querySelector('.joke-current-rating');
     if (ratingDisplay && data.averageRating && data.totalRatings) {
         ratingDisplay.innerHTML = `Current rating: ⭐ ${data.averageRating} (${data.totalRatings} ratings)`;
+        
+        // Add update animation
+        ratingDisplay.classList.add('rating-count-updated');
+        setTimeout(() => {
+            ratingDisplay.classList.remove('rating-count-updated');
+        }, 2000);
     }
 }

@@ -11,6 +11,59 @@ if (typeof socket !== 'undefined' && socket) {
         console.log('Rating update received:', data);
         updateTrendingSection();
     });
+    
+    socket.on('topJokesUpdate', function(data) {
+        console.log('Top jokes update received in main.js:', data);
+        // This will be handled by jokes.js if it's loaded
+        // Otherwise, we can add a fallback here
+        if (typeof updateTopJokesSection === 'undefined') {
+            updateMainPageTopJokes(data);
+        }
+    });
+}
+
+// Fallback function for updating top jokes when jokes.js is not loaded
+async function updateMainPageTopJokes(updateData) {
+    const topJokesSection = document.querySelector('.top-jokes-section');
+    if (!topJokesSection) return;
+    
+    try {
+        const response = await fetch('/joke/current-top');
+        if (!response.ok) throw new Error('Failed to fetch top jokes');
+        
+        const topJokes = await response.json();
+        
+        const jokesGrid = topJokesSection.querySelector('.jokes-grid');
+        if (jokesGrid && topJokes.length > 0) {
+            jokesGrid.classList.add('updating');
+            
+            setTimeout(() => {
+                jokesGrid.innerHTML = topJokes.map((joke, index) => `
+                    <div class="top-joke ${joke.jokeId === updateData.jokeId ? 'updated' : ''}" data-joke-id="${joke.jokeId}">
+                        <div class="joke-rank">#${index + 1}</div>
+                        <div class="joke-text">${joke.text}</div>
+                        <div class="joke-stats">
+                            <span class="rating">⭐ ${joke.averageRating}</span>
+                            <span class="total-ratings">(${joke.totalRatings} ratings)</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                jokesGrid.classList.remove('updating');
+                
+                // Highlight updated joke
+                const updatedJoke = jokesGrid.querySelector(`[data-joke-id="${updateData.jokeId}"]`);
+                if (updatedJoke) {
+                    updatedJoke.classList.add('rating-updated');
+                    setTimeout(() => {
+                        updatedJoke.classList.remove('rating-updated', 'updated');
+                    }, 3000);
+                }
+            }, 500);
+        }
+    } catch (error) {
+        console.error('Error updating main page top jokes:', error);
+    }
 }
 
 // Utility functions
@@ -117,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const images = document.querySelectorAll('img');
     images.forEach(img => {
         img.addEventListener('error', function() {
-            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJpbGRlIGlra2UgZnVubmV0PC90ZXh0Pjwvc3ZnPg==';
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvcnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkJpbGRlIGlra2UgZnVubmV0PC90ZXh0Pjwvc3ZnPg==';
             this.alt = 'Bilde ikke funnet';
         });
     });

@@ -139,7 +139,8 @@ router.post('/rate/:jokeId', authenticateToken, async (req, res) => {
     };
     
     io.emit('ratingUpdate', updateData);
-    io.emit('jokeRatingUpdate', updateData); // Add this line for leaderboard compatibility
+    io.emit('jokeRatingUpdate', updateData);
+    io.emit('topJokesUpdate', updateData); // Add this line for main page top jokes
     
     console.log('Emitted rating update:', updateData);
 
@@ -168,6 +169,21 @@ router.get('/top-rated', async (req, res) => {
   } catch (error) {
     console.error('Error fetching top rated jokes:', error);
     res.status(500).json({ error: 'Failed to fetch top rated jokes' });
+  }
+});
+
+// Add new endpoint to get current top jokes
+router.get('/current-top', async (req, res) => {
+  try {
+    const topJokes = await Joke.find({ totalRatings: { $gt: 0 } })
+      .sort({ averageRating: -1, totalRatings: -1 })
+      .limit(5)
+      .select('jokeId text category averageRating totalRatings');
+
+    res.json(topJokes);
+  } catch (error) {
+    console.error('Error fetching current top jokes:', error);
+    res.status(500).json({ error: 'Failed to fetch top jokes' });
   }
 });
 
